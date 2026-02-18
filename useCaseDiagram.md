@@ -1,50 +1,44 @@
 ```mermaid
 flowchart LR
 
-%% Actors
-User((User))
-GitHubAPI((GitHub API))
-AIService((AI Analysis Service))
-Database((Database))
+    User[User]
+    GitHub[GitHub API]
+    AI[AI Analysis Service]
+    DB[(Database)]
 
-%% System Boundary
-subgraph GitHub_Profile_Reviewer_System
+    subgraph System[GitHub Profile Reviewer System]
 
-Register(Register / Login)
-PasteURL(Paste GitHub Profile URL)
-FetchData(Fetch Profile Data)
-AnalyzeProfile(Analyze Profile)
-AIProcessing(AI Processing)
-GenerateReport(Generate Evaluation Report)
-SkillSummary(View Skill Summary)
-Suggestions(View Improvement Suggestions)
-DownloadReport(Download Report)
-SaveReport(Save Report to Dashboard)
-Logout(Logout)
+        UC1((Register / Login))
+        UC2((Paste GitHub Profile URL))
+        UC3((Analyze Profile))
+        UC4((View AI Evaluation Report))
+        UC5((View Skill Summary))
+        UC6((View Improvement Suggestions))
+        UC7((Logout))
 
-end
+        UC8((Fetch Profile Data))
+        UC9((AI Processing))
+        UC10((Generate Summary))
+        UC11((Download Report))
+        UC12((Save Report to Dashboard))
 
-%% User interactions
-User --> Register
-User --> PasteURL
-User --> AnalyzeProfile
-User --> GenerateReport
-User --> SkillSummary
-User --> Suggestions
-User --> Logout
+        User --> UC1
+        User --> UC2
+        User --> UC3
+        User --> UC4
+        User --> UC5
+        User --> UC6
+        User --> UC7
 
-%% System includes
-AnalyzeProfile --> FetchData
-AnalyzeProfile --> AIProcessing
-GenerateReport --> SkillSummary
-GenerateReport --> Suggestions
+        UC3 -->|<<include>>| UC8
+        UC3 -->|<<include>>| UC9
+        UC4 -->|<<include>>| UC10
 
-%% Optional extensions
-GenerateReport -.-> DownloadReport
-AnalyzeProfile -.-> SaveReport
+        UC4 -.->|<<extend>>| UC11
+        UC3 -.->|<<extend>>| UC12
+    end
 
-%% External systems
-GitHubAPI --> FetchData
-AIService --> AIProcessing
-Database --> SaveReport
-Database --> Register
+    GitHub --> UC8
+    AI --> UC9
+    DB --> UC12
+    DB --> UC1
