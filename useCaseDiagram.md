@@ -3,24 +3,27 @@ flowchart LR
 
     User[User]
     GitHub[GitHub API]
+    OAuth[GitHub OAuth Service]
     AI[AI Analysis Service]
     DB[(Database)]
 
     subgraph System[GitHub Profile Reviewer System]
 
         UC1((Register / Login))
-        UC2((Paste GitHub Profile URL))
-        UC3((Analyze Profile))
-        UC4((View AI Evaluation Report))
-        UC5((View Skill Summary))
-        UC6((View Improvement Suggestions))
-        UC7((Logout))
+        UC2((Login with GitHub OAuth))
+        UC3((Paste GitHub Profile URL))
+        UC4((Analyze Profile))
+        UC5((View AI Evaluation Report))
+        UC6((View Skill Summary))
+        UC7((View Improvement Suggestions))
+        UC8((Logout))
 
-        UC8((Fetch Profile Data))
-        UC9((AI Processing))
-        UC10((Generate Summary))
-        UC11((Download Report))
-        UC12((Save Report to Dashboard))
+        UC9((Fetch Profile Data))
+        UC10((AI Processing))
+        UC11((Generate Summary))
+        UC12((Download Report))
+        UC13((Save Report to Dashboard))
+        UC14((Store User Session))
 
         User --> UC1
         User --> UC2
@@ -29,16 +32,20 @@ flowchart LR
         User --> UC5
         User --> UC6
         User --> UC7
+        User --> UC8
 
-        UC3 -->|<<include>>| UC8
-        UC3 -->|<<include>>| UC9
+        UC2 -->|<<include>>| UC14
+        UC4 -->|<<include>>| UC9
         UC4 -->|<<include>>| UC10
+        UC5 -->|<<include>>| UC11
 
-        UC4 -.->|<<extend>>| UC11
-        UC3 -.->|<<extend>>| UC12
+        UC5 -.->|<<extend>>| UC12
+        UC4 -.->|<<extend>>| UC13
     end
 
-    GitHub --> UC8
-    AI --> UC9
-    DB --> UC12
-    DB --> UC1
+    OAuth --> UC2
+    GitHub --> UC9
+    AI --> UC10
+    DB --> UC13
+    DB --> UC14
+
