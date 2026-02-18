@@ -1,68 +1,49 @@
-graph LR
+flowchart LR
 
-    %% Actors
-    U((User))
-    G((GitHub API))
-    AI((AI Analysis Service))
-    DB((Database))
+%% Actors
+User((User))
+GitHubAPI((GitHub API))
+AIService((AI Analysis Service))
+Database((Database))
 
-    %% System Boundary
-    subgraph System["GitHub Profile Reviewer System"]
-        direction TB
+%% System Boundary
+subgraph GitHub_Profile_Reviewer_System
 
-        %% Authentication
-        subgraph Auth["Authentication"]
-            UC1(Register)
-            UC2(Login)
-            UC3(Logout)
-        end
+Register(Register / Login)
+PasteURL(Paste GitHub Profile URL)
+FetchData(Fetch Profile Data)
+AnalyzeProfile(Analyze Profile)
+AIProcessing(AI Processing)
+GenerateReport(Generate Evaluation Report)
+SkillSummary(View Skill Summary)
+Suggestions(View Improvement Suggestions)
+DownloadReport(Download Report)
+SaveReport(Save Report to Dashboard)
+Logout(Logout)
 
-        %% Profile Input
-        subgraph Input["Profile Processing"]
-            UC4(Paste GitHub Profile URL)
-            UC5(Fetch Profile Data)
-            UC6(Analyze Profile)
-            UC7(AI Processing)
-        end
+end
 
-        %% Results
-        subgraph Results["Evaluation & Insights"]
-            UC8(Generate Evaluation Report)
-            UC9(View Skill Summary)
-            UC10(View Improvement Suggestions)
-            UC11(Download Report)
-            UC12(Save Report to Dashboard)
-        end
-    end
+%% User interactions
+User --> Register
+User --> PasteURL
+User --> AnalyzeProfile
+User --> GenerateReport
+User --> SkillSummary
+User --> Suggestions
+User --> Logout
 
-    %% User Relations
-    U --> UC1
-    U --> UC2
-    U --> UC3
-    U --> UC4
-    U --> UC6
-    U --> UC8
-    U --> UC9
-    U --> UC10
+%% System includes
+AnalyzeProfile --> FetchData
+AnalyzeProfile --> AIProcessing
+GenerateReport --> SkillSummary
+GenerateReport --> Suggestions
 
-    %% External Systems
-    G --> UC5
-    AI --> UC7
-    DB --> UC12
-    DB --> UC1
+%% Optional extensions
+GenerateReport -.-> DownloadReport
+AnalyzeProfile -.-> SaveReport
 
-    %% Include Relationships
-    UC6 --> UC5
-    UC6 --> UC7
-    UC8 --> UC9
-    UC8 --> UC10
-
-    %% Extend Relationships
-    UC8 -.-> UC11
-    UC6 -.-> UC12
-
-    %% Styling
-    style U fill:#f9f,stroke:#333,stroke-width:2px
-    style G fill:#bbf,stroke:#333,stroke-width:2px
-    style AI fill:#bbf,stroke:#333,stroke-width:2px
-    style DB fill:#bbf,stroke:#333,stroke-width:2px
+%% External systems
+GitHubAPI --> FetchData
+AIService --> AIProcessing
+Database --> SaveReport
+Database --> Register
