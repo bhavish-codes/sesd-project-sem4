@@ -38,9 +38,40 @@ npm run dev
 
 Point your browser to [http://localhost:3000](http://localhost:3000) to initiate the connection. The system will start on the `AUTH` screen.
 
+## Folder Structure
+
+```text
+sesd-project-sem4/
+├── backend/                  # Future Node.js / Express backend
+├── gitanalyser/              # Next.js SPA Frontend
+│   ├── src/
+│   │   ├── app/
+│   │   │   ├── globals.css   # Contains Tailwind & custom color variables
+│   │   │   ├── layout.tsx
+│   │   │   └── page.tsx      # Main application host container
+│   │   ├── components/
+│   │   │   ├── FlashCard.tsx # Core Finite State Machine router component
+│   │   │   └── screens/      # Stylized individual states
+│   │   │       ├── AuthScreen.tsx
+│   │   │       ├── LoadingScreen.tsx
+│   │   │       ├── MultiResultScreen.tsx
+│   │   │       └── ResultScreen.tsx
+│   │   └── types/
+│   │       └── index.ts      # TypeScript interfaces and state types
+│   ├── next.config.ts
+│   ├── package.json
+│   └── tsconfig.json
+├── classDiagram.md           # Component state mapping diagram
+├── ErDiagram.md              # Database caching schema visualization
+├── idea.md                   # Initial project conception outline
+├── readme.md                 # Project documentation
+├── sequenceDiagram.md        # Step-by-step FSM rendering trace
+└── useCaseDiagram.md         # Thematic flowchart of user interaction
+```
+
 ## Project Structure & Diagrams
 
-This project uses Mermaid diagrams to define its structure. See the included `.md` files for full architectures:
+This project uses Mermaid diagrams to define its logic structure. See the included `.md` files for full architectures:
 - **[Class Diagram](./classDiagram.md)**: Details the React FSM Component structures.
 - **[Sequence Diagram](./sequenceDiagram.md)**: Outlines how the FSM transitions from Authentication to Data Rendering.
 - **[Use Case Diagram](./useCaseDiagram.md)**: Highlights the thematic user behaviors.
