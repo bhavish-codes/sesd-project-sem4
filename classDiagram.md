@@ -1,63 +1,61 @@
 ```mermaid
 classDiagram
 
-    class User {
-        +id: string
-        +name: string
-        +email: string
-        +login()
-        +logout()
+    class App {
+        +screen: ScreenState
+        +data: ProfileData
+        +setScreen()
+        +setData()
     }
 
-    class AuthService {
-        +loginWithOAuth(code: string)
-        +storeSession(user: User)
-        +validateSession()
+    class FlashCard {
+        +screen: ScreenState
+        +renderScreen()
+    }
+
+    class AuthScreen {
+        +initiateHandshake()
+    }
+
+    class LoadingScreen {
+        +progressExtraction()
+        +fetchGitHubData()
+    }
+
+    class ResultScreen {
+        +displayExtractionMatrix()
+        +displayLinguisticFormula()
+        +viewMultiResult()
+    }
+
+    class MultiResultScreen {
+        +displayBatchResults()
     }
 
     class GitHubService {
-        +fetchPublicProfile(url: string)
-        +fetchRepositories(username: string)
+        +fetchProfile(username: string)
+        +fetchRepos(username: string)
     }
 
     class AIAnalysisService {
-        +analyzeProfile(data: ProfileData)
-        +generateSkillSummary()
-        +generateImprovementSuggestions()
-    }
-
-    class ProfileAnalyzer {
-        +analyze(url: string)
-        +generateReport()
-    }
-
-    class Report {
-        +id: string
-        +summary: string
-        +skills: string[]
-        +suggestions: string[]
-        +download()
-    }
-
-    class Database {
-        +saveUser(user: User)
-        +saveReport(report: Report)
-        +getUserReports(userId: string)
+        +generateInsights(data: ProfileData)
     }
 
     class ProfileData {
         +username: string
-        +repositories: list
+        +commits: string
+        +repos: string
+        +followers: string
         +languages: list
-        +activityStats: object
+        +matrixData: object
     }
-
-    %% Relationships
-    User --> AuthService
-    AuthService --> Database
-    ProfileAnalyzer --> GitHubService
-    ProfileAnalyzer --> AIAnalysisService
-    ProfileAnalyzer --> Report
-    AIAnalysisService --> ProfileData
-    GitHubService --> ProfileData
-    Database --> Report
+    
+    App --> FlashCard
+    FlashCard --> AuthScreen
+    FlashCard --> LoadingScreen
+    FlashCard --> ResultScreen
+    FlashCard --> MultiResultScreen
+    LoadingScreen --> GitHubService
+    LoadingScreen --> AIAnalysisService
+    ResultScreen --> ProfileData
+```

@@ -1,39 +1,35 @@
 ```mermaid
 erDiagram
-
-    USER {
-        string id PK
-        string name
-        string email
-        string oauth_provider
-        datetime created_at
+    SEARCH_SESSION {
+        string session_id PK
+        string current_state
+        datetime initiated_at
     }
 
-    SESSION {
-        string id PK
-        string user_id FK
-        string access_token
-        datetime expires_at
+    GITHUB_PROFILE {
+        string username PK
+        int commits
+        int repos_count
+        int followers
+        string extraction_matrix_data
+        datetime last_scraped
     }
 
-    PROFILE {
+    LANGUAGE_FORMULA {
         string id PK
-        string github_username
-        string profile_url
-        string raw_data
-        datetime fetched_at
+        string github_profile_id FK
+        string language_name
+        float percentage
     }
 
-    REPORT {
+    AI_INSIGHT {
         string id PK
-        string user_id FK
-        string profile_id FK
+        string github_profile_id FK
         string summary
-        string skills
-        string suggestions
-        datetime created_at
+        datetime generated_at
     }
 
-    USER ||--o{ SESSION : has
-    USER ||--o{ REPORT : owns
-    PROFILE ||--o{ REPORT : analyzed_for
+    SEARCH_SESSION ||--o{ GITHUB_PROFILE : "tracks extraction of"
+    GITHUB_PROFILE ||--o{ LANGUAGE_FORMULA : "has volumetric breakdown"
+    GITHUB_PROFILE ||--|| AI_INSIGHT : "analyzed into"
+```
