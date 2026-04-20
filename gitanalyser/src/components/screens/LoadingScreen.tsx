@@ -20,9 +20,8 @@ export function LoadingScreen({ setScreen, setData, data }: Props) {
       ]);
 
       try {
-        // Use environment variable for backend URL (Vercel compatible)
-        const API_URL =
-          process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+        // Hardcoded Vercel backend URL
+        const API_URL = "https://sesd-project-sem4.vercel.app";
         const res = await fetch(`${API_URL}/api/github/${username}`);
 
         if (!res.ok) {

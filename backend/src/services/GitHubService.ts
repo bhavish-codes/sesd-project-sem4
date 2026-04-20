@@ -9,7 +9,7 @@ export class GitHubService {
   async fetchAndStoreProfile(
     accessToken: string,
     userId: string,
-    githubUserData: any
+    githubUserData: any,
   ): Promise<ProfileData> {
     const { login, public_repos, followers, following } = githubUserData;
 
@@ -23,7 +23,7 @@ export class GitHubService {
           Authorization: `Bearer ${accessToken}`,
           Accept: "application/vnd.github.v3+json",
         },
-      }
+      },
     );
 
     const repos: any[] = reposRes.ok ? await reposRes.json() : [];
@@ -49,7 +49,8 @@ export class GitHubService {
     const languages = Object.entries(langCount)
       .map(([name, count]) => ({
         name,
-        percentage: totalWithLang > 0 ? Math.round((count / totalWithLang) * 100) : 0,
+        percentage:
+          totalWithLang > 0 ? Math.round((count / totalWithLang) * 100) : 0,
       }))
       .sort((a, b) => b.percentage - a.percentage)
       .slice(0, 6); // top 6 languages
@@ -61,7 +62,7 @@ export class GitHubService {
     };
 
     console.log(
-      `✅ Profile built: ${repositories.length} repos, ${languages.length} langs`
+      `✅ Profile built: ${repositories.length} repos, ${languages.length} langs`,
     );
 
     // Upsert profile in MongoDB

@@ -7,20 +7,21 @@ import { Report } from "./models/Report.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 
+// Vercel production URLs
+const FRONTEND_URL = "https://sesd-project-sem4-lszv.vercel.app";
+const BACKEND_URL = "https://sesd-project-sem4.vercel.app";
+
 const app = express();
 app.use(
   cors({
-    origin:
-      process.env.VERCEL_FRONTEND_URL ||
-      process.env.FRONTEND_URL ||
-      "http://localhost:3000",
+    origin: FRONTEND_URL,
     credentials: true,
   }),
 );
 app.use(cookieParser());
 app.use(express.json());
 
-const PORT = process.env.PORT || 3001;
+const PORT = 3001;
 
 // Lazy load services to avoid cold start errors
 const getDatabase = () => new Database();
@@ -64,12 +65,10 @@ app.get("/api/auth/callback", async (req, res) => {
       sameSite: "lax",
     });
 
-    const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
-
     res.redirect(`${FRONTEND_URL}`);
   } catch (error) {
     console.error("OAuth callback error:", error);
-    res.redirect(`${process.env.FRONTEND_URL}/error`);
+    res.redirect(`${FRONTEND_URL}/error`);
   }
 });
 
