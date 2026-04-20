@@ -20,8 +20,8 @@ export function LoadingScreen({ setScreen, setData, data }: Props) {
       ]);
 
       try {
-        // Hardcoded Vercel backend URL
-        const API_URL = "https://sesd-project-sem4.vercel.app";
+        // Dynamic backend URL
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://sesd-project-sem4.vercel.app";
         const res = await fetch(`${API_URL}/api/github/${username}`);
 
         if (!res.ok) {

@@ -7,9 +7,11 @@ import { Report } from "./models/Report.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 
-// Vercel production URLs
-const FRONTEND_URL = "https://sesd-project-sem4-lszv.vercel.app";
-const BACKEND_URL = "https://sesd-project-sem4.vercel.app";
+// Mode detection
+const isProd = process.env.NODE_ENV === "production";
+
+// Use environment variables or local defaults
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
 
 const app = express();
 app.use(
@@ -21,7 +23,7 @@ app.use(
 app.use(cookieParser());
 app.use(express.json());
 
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
 // Lazy load services to avoid cold start errors
 const getDatabase = () => new Database();
@@ -61,8 +63,8 @@ app.get("/api/auth/callback", async (req, res) => {
     // ✅ secure session
     res.cookie("token", accessToken, {
       httpOnly: true,
-      secure: false,
-      sameSite: "lax",
+      secure: isProd, // Must be true for sameSite: 'none'
+      sameSite: isProd ? "none" : "lax",
     });
 
     res.redirect(`${FRONTEND_URL}`);

@@ -53,7 +53,8 @@ export function AuthScreen({ setScreen }: Props) {
         <button
           className="w-full bg-black text-white px-8 py-5 font-mono text-sm tracking-widest font-bold uppercase hover:bg-gray-800 transition-colors relative"
           onClick={() => {
-            window.location.href = `https://sesd-project-sem4.vercel.app/api/auth/github`;
+            const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "https://sesd-project-sem4.vercel.app";
+            window.location.href = `${BACKEND_URL}/api/auth/github`;
           }}
         >
           Authenticate via Github
