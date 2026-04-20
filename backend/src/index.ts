@@ -1,10 +1,9 @@
 import "dotenv/config";
 import express from "express";
-import { prisma } from "../lib/prisma";
-import { Database } from "./services/Database";
-import { AuthService } from "./services/AuthService";
-import { GitHubService } from "./services/GitHubService";
-import { Report } from "./models/Report";
+import { Database } from "./services/Database.js";
+import { AuthService } from "./services/AuthService.js";
+import { GitHubService } from "./services/GitHubService.js";
+import { Report } from "./models/Report.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 

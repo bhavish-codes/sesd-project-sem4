@@ -1,5 +1,5 @@
-import { prisma } from "../../lib/prisma";
-import { User } from "../models/User";
+import { prisma } from "../../lib/prisma.js";
+import { User } from "../models/User.js";
 
 const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID!;
 const GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET!;
@@ -8,19 +8,22 @@ const GITHUB_REDIRECT_URI = process.env.GITHUB_REDIRECT_URI!;
 export class AuthService {
   /** Exchange OAuth code for an access token from GitHub */
   async exchangeCodeForToken(code: string): Promise<string> {
-    const response = await fetch("https://github.com/login/oauth/access_token", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
+    const response = await fetch(
+      "https://github.com/login/oauth/access_token",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          client_id: GITHUB_CLIENT_ID,
+          client_secret: GITHUB_CLIENT_SECRET,
+          code,
+          redirect_uri: GITHUB_REDIRECT_URI,
+        }),
       },
-      body: JSON.stringify({
-        client_id: GITHUB_CLIENT_ID,
-        client_secret: GITHUB_CLIENT_SECRET,
-        code,
-        redirect_uri: GITHUB_REDIRECT_URI,
-      }),
-    });
+    );
 
     const data = (await response.json()) as any;
     if (data.error) {
@@ -52,7 +55,7 @@ export class AuthService {
    *  Returns the DB User record + the access token + raw GitHub data
    */
   async loginWithOAuth(
-    code: string
+    code: string,
   ): Promise<{ user: User; accessToken: string; githubUserData: any }> {
     console.log("🔐 Exchanging OAuth code for access token...");
     const accessToken = await this.exchangeCodeForToken(code);
@@ -81,7 +84,11 @@ export class AuthService {
     });
 
     console.log(`✅ User upserted in DB: ${record.name} (${record.id})`);
-    return { user: User.fromPrisma(record), accessToken, githubUserData: ghUser };
+    return {
+      user: User.fromPrisma(record),
+      accessToken,
+      githubUserData: ghUser,
+    };
   }
 
   /** Placeholder — integrate JWT / express-session here */

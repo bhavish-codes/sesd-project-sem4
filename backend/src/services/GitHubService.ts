@@ -1,5 +1,5 @@
-import { prisma } from "../../lib/prisma";
-import { ProfileData } from "../models/ProfileData";
+import { prisma } from "../../lib/prisma.js";
+import { ProfileData } from "../models/ProfileData.js";
 
 export class GitHubService {
   /**

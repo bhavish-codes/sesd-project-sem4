@@ -1,6 +1,6 @@
-import { prisma } from "../../lib/prisma";
-import { User } from "../models/User";
-import { Report } from "../models/Report";
+import { prisma } from "../../lib/prisma.js";
+import { User } from "../models/User.js";
+import { Report } from "../models/Report.js";
 
 export class Database {
   /** Save a user to MongoDB via Prisma (upsert by email) */
