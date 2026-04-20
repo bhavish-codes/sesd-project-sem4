@@ -2,30 +2,37 @@ import { prisma } from "../../lib/prisma.js";
 
 export class GitHubService {
   /**
-   * Fetch real GitHub profile data using the authenticated user's access token.
-   * Stores/updates the profile in MongoDB.
+   * Fetch real GitHub profile data.
+   * If accessToken is provided, it fetches from /user/repos (private + public).
+   * If not, it expects repos to be passed in (from public fetch).
    */
   async fetchAndStoreProfile(
     accessToken: string,
     userId: string,
     githubUserData: any,
+    providedRepos?: any[],
   ): Promise<any> {
     const { login, public_repos, followers, following } = githubUserData;
 
-    console.log(`📦 Fetching repositories for ${login}...`);
+    let repos = providedRepos;
 
-    // Fetch repos (up to 30, sorted by most recently updated)
-    const reposRes = await fetch(
-      `https://api.github.com/user/repos?per_page=30&sort=updated&type=owner`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          Accept: "application/vnd.github.v3+json",
+    if (!repos && accessToken) {
+      console.log(`📦 Fetching authenticated repositories for ${login}...`);
+      const reposRes = await fetch(
+        `https://api.github.com/user/repos?per_page=30&sort=updated&type=owner`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            Accept: "application/vnd.github.v3+json",
+          },
         },
-      },
-    );
+      );
+      repos = reposRes.ok ? await reposRes.json() : [];
+    }
 
-    const repos: any[] = reposRes.ok ? await reposRes.json() : [];
+    if (!repos) repos = [];
+
+    console.log(`🔨 Processing ${repos.length} repositories for ${login}...`);
 
     // Build a simplified repositories list
     const repositories = repos.map((r: any) => ({
@@ -36,7 +43,7 @@ export class GitHubService {
       url: r.html_url,
     }));
 
-    // Aggregate language usage from primary language per repo
+    // Aggregate language usage
     const langCount: Record<string, number> = {};
     for (const r of repos) {
       if (r.language) {
@@ -52,7 +59,7 @@ export class GitHubService {
           totalWithLang > 0 ? Math.round((count / totalWithLang) * 100) : 0,
       }))
       .sort((a, b) => b.percentage - a.percentage)
-      .slice(0, 6); // top 6 languages
+      .slice(0, 6);
 
     const activityStats = {
       publicRepos: public_repos ?? 0,
@@ -60,11 +67,6 @@ export class GitHubService {
       following: following ?? 0,
     };
 
-    console.log(
-      `✅ Profile built: ${repositories.length} repos, ${languages.length} langs`,
-    );
-
-    // Upsert profile in MongoDB
     const record = await prisma.profileData.upsert({
       where: { userId },
       update: {
@@ -82,31 +84,20 @@ export class GitHubService {
       },
     });
 
-    console.log(`💾 Profile stored for ${record.username} (id: ${record.id})`);
+    console.log(`✅ Profile synced for ${record.username}`);
     return record;
   }
 
-  /** Fetch repositories for a username (cached from DB first) */
+  /** Fetch repositories from DB */
   async fetchRepositories(username: string): Promise<any[]> {
-    const profile = await prisma.profileData.findUnique({
-      where: { username },
-    });
-
-    if (profile) {
-      return (profile.repositories as any[]) || [];
-    }
-
-    return [];
+    const profile = await prisma.profileData.findUnique({ where: { username } });
+    return (profile?.repositories as any[]) || [];
   }
 
   /**
    * Fetch profile data for a public GitHub URL.
-   * Uses the internal GITHUB_TOKEN if available.
    */
-  async fetchPublicProfile(
-    githubUrl: string,
-    userId: string,
-  ): Promise<any> {
+  async fetchPublicProfile(githubUrl: string, userId: string): Promise<any> {
     const username = githubUrl.split("/").pop() || "unknown";
     const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 
@@ -118,25 +109,23 @@ export class GitHubService {
     }
 
     // 1. Fetch user data
-    const userRes = await fetch(`https://api.github.com/users/${username}`, {
-      headers,
-    });
+    const userRes = await fetch(`https://api.github.com/users/${username}`, { headers });
     const userData = userRes.ok ? await userRes.json() : {};
 
-    // 2. Fetch repos
+    // 2. Fetch repos (Public endpoint)
     const reposRes = await fetch(
       `https://api.github.com/users/${username}/repos?per_page=30&sort=updated`,
       { headers },
     );
     const repos: any[] = reposRes.ok ? await reposRes.json() : [];
 
-    // Reuse the logic from fetchAndStoreProfile but for public data
+    // Pass the already fetched repos to avoid the token-less /user/repos call
     return this.fetchAndStoreProfile("", userId, {
       ...userData,
       login: username,
       public_repos: userData.public_repos || 0,
       followers: userData.followers || 0,
       following: userData.following || 0,
-    });
+    }, repos);
   }
 }
