@@ -23,9 +23,10 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 3001;
 
-const database = new Database();
-const authService = new AuthService();
-const githubService = new GitHubService();
+// Lazy load services to avoid cold start errors
+const getDatabase = () => new Database();
+const getAuthService = () => new AuthService();
+const getGitHubService = () => new GitHubService();
 
 // Vercel serverless export
 export default app;
@@ -48,14 +49,14 @@ app.get("/api/auth/callback", async (req, res) => {
     const code = req.query.code;
     if (!code) return res.status(400).send("No code provided");
 
-    const { user, accessToken, githubUserData } =
-      await authService.loginWithOAuth(code as string);
+    const authSvc = getAuthService();
+    const githubSvc = getGitHubService();
 
-    await githubService.fetchAndStoreProfile(
-      accessToken,
-      user.id,
-      githubUserData,
+    const { user, accessToken, githubUserData } = await authSvc.loginWithOAuth(
+      code as string,
     );
+
+    await githubSvc.fetchAndStoreProfile(accessToken, user.id, githubUserData);
 
     // ✅ secure session
     res.cookie("token", accessToken, {
@@ -84,7 +85,8 @@ app.get("/api/me", async (req, res) => {
 
   try {
     // Try to get user from database first (stored during OAuth)
-    const users = await database.getAllUsers();
+    const db = getDatabase();
+    const users = await db.getAllUsers();
     if (users.length > 0) {
       // Return the most recent user
       const user = users[users.length - 1];
@@ -119,7 +121,8 @@ app.get("/api/me", async (req, res) => {
 
 app.get("/api/users", async (_req, res) => {
   try {
-    const users = await database.getAllUsers();
+    const db = getDatabase();
+    const users = await db.getAllUsers();
     res.json(users);
   } catch (error) {
     res.status(500).json({ error: String(error) });
@@ -128,7 +131,8 @@ app.get("/api/users", async (_req, res) => {
 
 app.get("/api/users/:id", async (req, res) => {
   try {
-    const user = await database.findUserById(req.params.id);
+    const db = getDatabase();
+    const user = await db.findUserById(req.params.id);
     if (!user) {
       res.status(404).json({ error: "User not found" });
       return;
@@ -143,7 +147,8 @@ app.get("/api/users/:id", async (req, res) => {
 app.post("/api/profile/:userId", async (req, res) => {
   try {
     const { githubUrl } = req.body;
-    const profile = await githubService.fetchPublicProfile(
+    const githubSvc = getGitHubService();
+    const profile = await githubSvc.fetchPublicProfile(
       githubUrl || "https://github.com/unknown",
       req.params.userId,
     );
@@ -156,7 +161,8 @@ app.post("/api/profile/:userId", async (req, res) => {
 // ─── Reports ───
 app.get("/api/reports/:userId", async (req, res) => {
   try {
-    const reports = await database.getUserReports(req.params.userId);
+    const db = getDatabase();
+    const reports = await db.getUserReports(req.params.userId);
     res.json(reports);
   } catch (error) {
     res.status(500).json({ error: String(error) });
@@ -167,7 +173,8 @@ app.post("/api/reports/:userId", async (req, res) => {
   try {
     const { summary, skills, suggestions } = req.body;
     const report = new Report("", summary, skills || [], suggestions || []);
-    const saved = await database.saveReport(req.params.userId, report);
+    const db = getDatabase();
+    const saved = await db.saveReport(req.params.userId, report);
     res.status(201).json({ success: true, report: saved });
   } catch (error) {
     res.status(500).json({ error: String(error) });
