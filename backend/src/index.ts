@@ -12,7 +12,20 @@ const PORT = process.env.PORT || 3001;
 
 const app = express();
 
-app.use(cors({ origin: FRONTEND_URL, credentials: true }));
+// Robust CORS for Vercel cross-domain cookies
+const allowedOrigins = [FRONTEND_URL, "https://sesd-project-sem4-lszv.vercel.app"];
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin) || isProd) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  }),
+);
 app.use(cookieParser());
 app.use(express.json());
 

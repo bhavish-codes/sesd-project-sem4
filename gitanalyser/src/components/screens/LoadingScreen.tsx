@@ -12,32 +12,36 @@ export function LoadingScreen({ setScreen, setData, data }: Props) {
 
   useEffect(() => {
     const fetchGitHubData = async (username: string) => {
-      setLogs([
-        "FETCHING USER DATA...",
-        "FETCHING REPOS...",
-        "AGGREGATING STATS...",
-        "SUCCESS.",
-      ]);
+      setLogs(["INITIALIZING INTERCEPTOR...", "SCANNING GITHUB RELAYS..."]);
 
       try {
-        // Dynamic backend URL
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://sesd-project-sem4.vercel.app";
+        const API_URL =
+          process.env.NEXT_PUBLIC_API_URL ||
+          "https://sesd-project-sem4.vercel.app";
         const res = await fetch(`${API_URL}/api/github/${username}`);
 
-        if (!res.ok) {
-          throw new Error(`API error: ${res.status}`);
-        }
+        if (!res.ok) throw new Error(`API error: ${res.status}`);
 
         const userData = await res.json();
         setData(userData);
+
+        setLogs((prev) => [...prev, "DATA_PACKETS_RECEIVED.", "DECODING..."]);
+
+        // Artificial delay for premium feel
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+
+        setLogs((prev) => [...prev, "DECODING COMPLETE.", "REDIRECTING..."]);
+
+        // Final tiny delay before transition
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
+        setScreen("RESULT");
       } catch (err) {
         console.error("Failed to fetch data:", err);
-        setLogs(["FAILED TO FETCH DATA"]);
+        setLogs(["FAILED TO FETCH DATA", "TARGET_LOST."]);
       }
-      setScreen("RESULT");
     };
 
-    // Use the username from data or fallback to 'torvalds'
     const username = data?.login || data?.username || "torvalds";
     fetchGitHubData(username);
   }, [setData, setScreen, data]);

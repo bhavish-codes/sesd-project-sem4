@@ -3,7 +3,7 @@ import { AuthScreen } from "./screens/AuthScreen";
 import { LoadingScreen } from "./screens/LoadingScreen";
 import { ResultScreen } from "./screens/ResultScreen";
 import { MultiResultScreen } from "./screens/MultiResultScreen";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 interface FlashCardProps {
   screen: Screen;
   setScreen: (screen: Screen) => void;
@@ -17,10 +17,14 @@ export function FlashCard({
   setData,
   data,
 }: FlashCardProps) {
+  const [isChecking, setIsChecking] = useState(true);
+
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "https://sesd-project-sem4.vercel.app";
+        const BACKEND_URL =
+          process.env.NEXT_PUBLIC_API_URL ||
+          "https://sesd-project-sem4.vercel.app";
         const res = await fetch(`${BACKEND_URL}/api/me`, {
           credentials: "include",
         });
@@ -32,14 +36,23 @@ export function FlashCard({
           setData(userData);
           setScreen("LOADING");
         }
-        // If not logged in, stay on AUTH screen (do nothing)
       } catch (err) {
         console.log("Auth check failed, staying on AUTH");
+      } finally {
+        setIsChecking(false);
       }
     };
 
     checkAuth();
-  }, []);
+  }, [setData, setScreen]);
+
+  if (isChecking) {
+    return (
+      <div className="w-full h-full bg-[#eae6dc] flex items-center justify-center font-mono text-sm tracking-widest animate-pulse">
+        [INITIALIZING_HANDSHAKE...]
+      </div>
+    );
+  }
   return (
     <div className="w-full h-full relative z-10 flex">
       {screen === "AUTH" && <AuthScreen setScreen={setScreen} />}
