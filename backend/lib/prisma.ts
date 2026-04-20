@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { PrismaClient } from "./generated/prisma/client.js";
+import { PrismaClient } from "@prisma/client";
 
 // Lazy initialization for Vercel serverless
 const prisma = new PrismaClient({

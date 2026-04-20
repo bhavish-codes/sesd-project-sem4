@@ -301,16 +301,18 @@ app.get("/api/github/:username", async (req, res) => {
 });
 
 // ─── Start server ───
-app.listen(PORT, () => {
-  console.log(`\n🚀 Server running at http://localhost:${PORT}`);
-  console.log(`   Routes:`);
-  console.log(`   GET  /                     - Health check`);
-  console.log(`   GET  /api/auth/github      - Start GitHub OAuth`);
-  console.log(`   GET  /api/auth/callback    - GitHub OAuth callback`);
-  console.log(`   GET  /api/users            - List all users`);
-  console.log(`   GET  /api/users/:id        - Get user by ID`);
-  console.log(`   POST /api/profile/:userId  - Fetch & store GitHub profile`);
-  console.log(`   GET  /api/reports/:userId  - Get user reports`);
-  console.log(`   POST /api/reports/:userId  - Create a report`);
-  console.log(`   GET  /api/github/:username - Get GitHub profile data\n`);
-});
+if (process.env.NODE_ENV !== "production" || process.env.VERCEL !== "1") {
+  app.listen(PORT, () => {
+    console.log(`\n🚀 Server running at http://localhost:${PORT}`);
+    console.log(`   Routes:`);
+    console.log(`   GET  /                     - Health check`);
+    console.log(`   GET  /api/auth/github      - Start GitHub OAuth`);
+    console.log(`   GET  /api/auth/callback    - GitHub OAuth callback`);
+    console.log(`   GET  /api/users            - List all users`);
+    console.log(`   GET  /api/users/:id        - Get user by ID`);
+    console.log(`   POST /api/profile/:userId  - Fetch & store GitHub profile`);
+    console.log(`   GET  /api/reports/:userId  - Get user reports`);
+    console.log(`   POST /api/reports/:userId  - Create a report`);
+    console.log(`   GET  /api/github/:username - Get GitHub profile data\n`);
+  });
+}

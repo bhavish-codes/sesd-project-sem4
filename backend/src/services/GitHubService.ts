@@ -99,4 +99,45 @@ export class GitHubService {
 
     return [];
   }
+
+  /**
+   * Fetch profile data for a public GitHub URL.
+   * Uses the internal GITHUB_TOKEN if available.
+   */
+  async fetchPublicProfile(
+    githubUrl: string,
+    userId: string,
+  ): Promise<ProfileData> {
+    const username = githubUrl.split("/").pop() || "unknown";
+    const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+
+    const headers: Record<string, string> = {
+      Accept: "application/vnd.github.v3+json",
+    };
+    if (GITHUB_TOKEN) {
+      headers["Authorization"] = `token ${GITHUB_TOKEN}`;
+    }
+
+    // 1. Fetch user data
+    const userRes = await fetch(`https://api.github.com/users/${username}`, {
+      headers,
+    });
+    const userData = userRes.ok ? await userRes.json() : {};
+
+    // 2. Fetch repos
+    const reposRes = await fetch(
+      `https://api.github.com/users/${username}/repos?per_page=30&sort=updated`,
+      { headers },
+    );
+    const repos: any[] = reposRes.ok ? await reposRes.json() : [];
+
+    // Reuse the logic from fetchAndStoreProfile but for public data
+    return this.fetchAndStoreProfile("", userId, {
+      ...userData,
+      login: username,
+      public_repos: userData.public_repos || 0,
+      followers: userData.followers || 0,
+      following: userData.following || 0,
+    });
+  }
 }

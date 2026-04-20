@@ -34,7 +34,7 @@ export class Database {
       where: { userId: userId },
     });
     console.log(`Fetched ${records.length} reports for user ${userId}`);
-    return records.map((r) => Report.fromPrisma(r));
+    return records.map((r: any) => Report.fromPrisma(r));
   }
 
   /** Find a user by email */
@@ -56,6 +56,6 @@ export class Database {
   /** Get all users */
   async getAllUsers(): Promise<User[]> {
     const records = await prisma.user.findMany();
-    return records.map((r) => User.fromPrisma(r));
+    return records.map((r: any) => User.fromPrisma(r));
   }
 }
