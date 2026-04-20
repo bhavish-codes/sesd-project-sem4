@@ -4,50 +4,134 @@ A highly stylized, finite-state-machine (FSM) driven web application designed to
 
 ## Features
 
-- **State-Driven Architecture**: Trades traditional routing for a React multi-screen FSM (`AUTH` → `LOADING` → `RESULT`).
+- **State-Driven Architecture**: Trades traditional routing for a React multi-screen FSM (`AUTH` → `LOADING` → `RESULT` → `MULTI_RESULT`).
 - **Encrypted Portal UI**: Operates via a "Secure Handshake" interface with brutalist styling and terminal-like diagnostics.
 - **Extraction Matrix**: A visual heat-map block simulating complex codebase analysis.
 - **Linguistic Formula**: Translates programming languages into a volumetric composition bar.
 - **Seamless Loading Flow**: Animated transitions showing faux trace routes, latency data, and system logs.
+- **Backend API**: Express.js server with GitHub OAuth and profile data fetching via GraphQL.
 
 ## Tech Stack
 
-- **Framework**: [Next.js](https://nextjs.org/) (App Router)
-- **Library**: React
+- **Frontend**: [Next.js](https://nextjs.org/) (App Router) + React
+- **Backend**: Express.js (Node.js)
+- **Database**: MongoDB (via Prisma)
 - **Styling**: Tailwind CSS + Vanilla CSS components.
 - **State Management**: React `useState` structured as a custom FSM.
+- **Deployment**: Vercel-ready (both frontend and backend)
 
 ## Getting Started
 
-### Installation
+### Prerequisites
 
-Navigate to the frontend directory and install the dependencies:
+- Node.js 18+
+- MongoDB (or use the provided MongoDB Atlas connection)
+- GitHub OAuth App (for authentication)
+
+### Local Development
+
+1. **Clone and install dependencies:**
 
 ```bash
+# Frontend
 cd gitanalyser
+npm install
+
+# Backend
+cd ../backend
 npm install
 ```
 
-### Running Locally
+2. **Configure environment variables:**
 
-Fire up the development server:
+Create `backend/.env`:
+
+```env
+DATABASE_URL="your-mongodb-connection-string"
+PORT=3001
+GITHUB_CLIENT_ID="your-github-oauth-client-id"
+GITHUB_CLIENT_SECRET="your-github-oauth-client-secret"
+GITHUB_REDIRECT_URI=http://localhost:3001/api/auth/callback
+FRONTEND_URL=http://localhost:3000
+GITHUB_TOKEN="your-github-personal-access-token"
+```
+
+3. **Run the application:**
 
 ```bash
+# Terminal 1 - Backend
+cd backend
+npm run dev
+
+# Terminal 2 - Frontend
+cd gitanalyser
 npm run dev
 ```
 
-Point your browser to [http://localhost:3000](http://localhost:3000) to initiate the connection. The system will start on the `AUTH` screen.
+Visit [http://localhost:3000](http://localhost:3000)
+
+## Vercel Deployment
+
+### Backend Deployment
+
+```bash
+cd backend
+vercel deploy
+```
+
+Required environment variables in Vercel:
+
+- `DATABASE_URL`
+- `GITHUB_CLIENT_ID`
+- `GITHUB_CLIENT_SECRET`
+- `GITHUB_REDIRECT_URI` — `https://your-backend.vercel.app/api/auth/callback`
+- `FRONTEND_URL` — Your frontend Vercel URL
+- `VERCEL_FRONTEND_URL` — Your frontend Vercel URL
+- `GITHUB_TOKEN`
+
+### Frontend Deployment
+
+```bash
+cd gitanalyser
+vercel deploy
+```
+
+Required environment variables:
+
+- `NEXT_PUBLIC_API_URL` — `https://your-backend.vercel.app`
+
+## API Endpoints
+
+| Method | Endpoint                | Description                  |
+| ------ | ----------------------- | ---------------------------- |
+| GET    | `/`                     | Health check                 |
+| GET    | `/api/auth/github`      | Start GitHub OAuth           |
+| GET    | `/api/auth/callback`    | OAuth callback               |
+| GET    | `/api/github/:username` | Get GitHub profile data      |
+| GET    | `/api/users`            | List all users               |
+| GET    | `/api/users/:id`        | Get user by ID               |
+| POST   | `/api/profile/:userId`  | Fetch & store GitHub profile |
+| GET    | `/api/reports/:userId`  | Get user reports             |
+| POST   | `/api/reports/:userId`  | Create a report              |
 
 ## Folder Structure
 
 ```text
 sesd-project-sem4/
-├── backend/                  # Future Node.js / Express backend
+├── backend/                  # Express.js API server
+│   ├── src/
+│   │   ├── index.ts          # Main server entry
+│   │   ├── services/         # Business logic
+│   │   └── models/           # Data models
+│   ├── prisma/               # Database schema
+│   └── vercel.json           # Vercel config
 ├── gitanalyser/              # Next.js SPA Frontend
 │   ├── src/
-│   │   ├── app/
-│   │   │   ├── globals.css   # Contains Tailwind & custom color variables
-│   │   │   ├── layout.tsx
+│   │   ├── app/              # Next.js App Router
+│   │   ├── components/       # React components
+│   │   └── types/            # TypeScript types
+│   └── .env.example          # Environment template
+└── readme.md
 │   │   │   └── page.tsx      # Main application host container
 │   │   ├── components/
 │   │   │   ├── FlashCard.tsx # Core Finite State Machine router component
@@ -72,6 +156,7 @@ sesd-project-sem4/
 ## Project Structure & Diagrams
 
 This project uses Mermaid diagrams to define its logic structure. See the included `.md` files for full architectures:
+
 - **[Class Diagram](./classDiagram.md)**: Details the React FSM Component structures.
 - **[Sequence Diagram](./sequenceDiagram.md)**: Outlines how the FSM transitions from Authentication to Data Rendering.
 - **[Use Case Diagram](./useCaseDiagram.md)**: Highlights the thematic user behaviors.
@@ -83,7 +168,7 @@ This project uses Mermaid diagrams to define its logic structure. See the includ
 
 **Next Immediate Objective**: Backend API & Real Data Integration.
 
-1. **API Integration in Loading Screen**: Modify the `setTimeout` in the `<LoadingScreen />` component to execute an asynchronous `fetch()` command addressing the GitHub API. 
+1. **API Integration in Loading Screen**: Modify the `setTimeout` in the `<LoadingScreen />` component to execute an asynchronous `fetch()` command addressing the GitHub API.
 2. **Dynamic Visualizer Generation**: Connect the retrieved GitHub repository data (loc, contributions, languages) to the state mapping, updating the "Extraction Matrix" and "Linguistic Formula" in `<ResultScreen />` to render dynamically based on the fetched arrays instead of static mockups.
 3. **Real OAuth Flow**: Replace the visual button state trigger in `<AuthScreen />` to redirect through the typical GitHub OAuth flow, capturing an access token on callback to increase API rate limits.
 4. **AI Processing**: Send the fetched raw data block to a preferred backend service to generate the natural language summary.

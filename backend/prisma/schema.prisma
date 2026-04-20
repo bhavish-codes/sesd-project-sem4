@@ -12,11 +12,15 @@ datasource db {
 }
 
 model User {
-  id      String        @id @default(auto()) @map("_id") @db.ObjectId
-  name    String
-  email   String        @unique
-  reports Report[]
-  profile ProfileData?
+  id        String       @id @default(auto()) @map("_id") @db.ObjectId
+  githubId  String       @unique
+  name      String
+  login     String?
+  email     String?
+  avatarUrl String?
+  bio       String?
+  reports   Report[]
+  profile   ProfileData?
 }
 
 model ProfileData {

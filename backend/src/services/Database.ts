@@ -52,4 +52,10 @@ export class Database {
     });
     return record ? User.fromPrisma(record) : null;
   }
+
+  /** Get all users */
+  async getAllUsers(): Promise<User[]> {
+    const records = await prisma.user.findMany();
+    return records.map((r) => User.fromPrisma(r));
+  }
 }

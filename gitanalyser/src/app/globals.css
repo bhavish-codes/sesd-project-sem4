@@ -3,7 +3,7 @@
 @theme {
   --color-background: #eae6dc;
   --color-foreground: #171717;
-  --color-brand-red: #bb2a28; /* Marginal extraction red */
+  --color-brand-red: #bb2a28;
   
   --font-serif: var(--font-playfair);
   --font-mono: var(--font-mono);
@@ -14,10 +14,9 @@ body {
   color: var(--color-foreground);
   background: var(--color-background);
   font-family: var(--font-sans);
-  overflow: hidden; /* App is a fixed single screen */
+  overflow: hidden;
 }
 
-/* Base utility for grid background */
 .bg-grid-pattern {
   background-image: 
     linear-gradient(rgba(0, 0, 0, 0.2) 1px, transparent 1px),
@@ -25,14 +24,13 @@ body {
   background-size: 32px 32px;
 }
 
-/* Utility for vertical text sideways */
 .vertical-text {
   writing-mode: vertical-rl;
   text-orientation: mixed;
   transform: rotate(180deg);
 }
 
-/* Circular spinning stamp text path (approximation via CSS or let's use an SVG inside the component) */
+/* Spinning circle animation */
 @keyframes spin-slow {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
@@ -40,4 +38,36 @@ body {
 
 .animate-spin-slow {
   animation: spin-slow 20s linear infinite;
+}
+
+/* Scanning line animation - moves up and down */
+@keyframes scan {
+  0% { top: 0; }
+  50% { top: 100%; }
+  100% { top: 0; }
+}
+
+.animate-scan {
+  animation: scan 2s ease-in-out infinite;
+}
+
+/* Crosshair pulse/zoom animation */
+@keyframes pulse-scale {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+}
+
+.animate-pulse-scale {
+  animation: pulse-scale 1.5s ease-in-out infinite;
+}
+
+/* Bar loading animation */
+@keyframes bar {
+  0% { width: 20%; }
+  50% { width: 100%; }
+  100% { width: 20%; }
+}
+
+.animate-bar {
+  animation: bar 1.5s ease-in-out infinite;
 }

@@ -5,8 +5,20 @@ import { Database } from "./services/Database";
 import { AuthService } from "./services/AuthService";
 import { GitHubService } from "./services/GitHubService";
 import { Report } from "./models/Report";
+import cors from "cors";
+import cookieParser from "cookie-parser";
 
 const app = express();
+app.use(
+  cors({
+    origin:
+      process.env.VERCEL_FRONTEND_URL ||
+      process.env.FRONTEND_URL ||
+      "http://localhost:3000",
+    credentials: true,
+  }),
+);
+app.use(cookieParser());
 app.use(express.json());
 
 const PORT = process.env.PORT || 3001;
@@ -15,29 +27,99 @@ const database = new Database();
 const authService = new AuthService();
 const githubService = new GitHubService();
 
+// Vercel serverless export
+export default app;
+
 // ─── Health check ───
 app.get("/", (_req, res) => {
   res.json({ status: "ok", message: "Git Analyser API is running 🚀" });
 });
 
 // ─── Auth: OAuth login ───
-app.post("/api/auth/login", async (req, res) => {
+app.get("/api/auth/github", (req, res) => {
+  const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID;
+  const GITHUB_REDIRECT_URI = process.env.GITHUB_REDIRECT_URI;
+  const url = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&redirect_uri=${GITHUB_REDIRECT_URI}&scope=user`;
+  res.redirect(url);
+});
+
+app.get("/api/auth/callback", async (req, res) => {
   try {
-    const { code } = req.body;
-    const user = await authService.loginWithOAuth(code || "mock-code");
-    authService.storeSession(user);
-    res.json({ success: true, user });
+    const code = req.query.code;
+    if (!code) return res.status(400).send("No code provided");
+
+    const { user, accessToken, githubUserData } =
+      await authService.loginWithOAuth(code as string);
+
+    await githubService.fetchAndStoreProfile(
+      accessToken,
+      user.id,
+      githubUserData,
+    );
+
+    // ✅ secure session
+    res.cookie("token", accessToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+    });
+
+    const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+
+    res.redirect(`${FRONTEND_URL}`);
   } catch (error) {
-    res.status(500).json({ success: false, error: String(error) });
+    console.error("OAuth callback error:", error);
+    res.redirect(`${process.env.FRONTEND_URL}/error`);
   }
 });
 
 // ─── Users ───
+app.get("/api/me", async (req, res) => {
+  const token = req.cookies.token;
+
+  if (!token) {
+    // No token = not logged in, return empty user (not an error)
+    return res.json({ loggedIn: false });
+  }
+
+  try {
+    // Try to get user from database first (stored during OAuth)
+    const users = await database.getAllUsers();
+    if (users.length > 0) {
+      // Return the most recent user
+      const user = users[users.length - 1];
+      return res.json({
+        loggedIn: true,
+        ...user,
+        // Mock commit count for demo
+        commits: Math.floor(Math.random() * 100) + 10,
+      });
+    }
+
+    // Fallback: try GitHub API
+    const userRes = await fetch("https://api.github.com/user", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/vnd.github.v3+json",
+      },
+    });
+
+    if (!userRes.ok) {
+      return res.json({ loggedIn: false });
+    }
+
+    const user = await userRes.json();
+    res.json({ loggedIn: true, ...user, commits: 0 });
+  } catch (err) {
+    console.error("/api/me error:", err);
+    // Return empty user instead of 500 to prevent frontend errors
+    res.json({ loggedIn: false });
+  }
+});
+
 app.get("/api/users", async (_req, res) => {
   try {
-    const users = await prisma.user.findMany({
-      include: { profile: true, reports: true },
-    });
+    const users = await database.getAllUsers();
     res.json(users);
   } catch (error) {
     res.status(500).json({ error: String(error) });
@@ -63,7 +145,7 @@ app.post("/api/profile/:userId", async (req, res) => {
     const { githubUrl } = req.body;
     const profile = await githubService.fetchPublicProfile(
       githubUrl || "https://github.com/unknown",
-      req.params.userId
+      req.params.userId,
     );
     res.json({ success: true, profile });
   } catch (error) {
@@ -92,15 +174,136 @@ app.post("/api/reports/:userId", async (req, res) => {
   }
 });
 
+// ─── GitHub Profile Data ───
+app.get("/api/github/:username", async (req, res) => {
+  const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+
+  if (!GITHUB_TOKEN) {
+    return res.status(500).json({ error: "GitHub token not configured" });
+  }
+
+  const { username } = req.params;
+  const headers = {
+    Authorization: `token ${GITHUB_TOKEN}`,
+    Accept: "application/vnd.github.v3+json",
+  };
+
+  try {
+    // 1. Fetch user info + top 5 repos in parallel
+    const [userRes, reposRes] = await Promise.all([
+      fetch(`https://api.github.com/users/${username}`, { headers }),
+      fetch(
+        `https://api.github.com/users/${username}/repos?sort=updated&per_page=5`,
+        { headers },
+      ),
+    ]);
+
+    if (!userRes.ok) {
+      return res.status(userRes.status).json({ error: "User not found" });
+    }
+    const userData = await userRes.json();
+    const reposData = await reposRes.json();
+
+    // 2. Fetch languages in parallel for top 5 repos
+    const languageTotals: Record<string, number> = {};
+
+    if (Array.isArray(reposData)) {
+      const langPromises = reposData.map(async (repo: any) => {
+        try {
+          const langRes = await fetch(repo.languages_url, { headers });
+          return await langRes.json();
+        } catch {
+          return {};
+        }
+      });
+
+      const langResults = await Promise.all(langPromises);
+
+      for (const langs of langResults) {
+        for (const [lang, bytes] of Object.entries(langs)) {
+          languageTotals[lang] =
+            (languageTotals[lang] || 0) + (bytes as number);
+        }
+      }
+    }
+
+    // 3. Get total contributions from GitHub GraphQL API (like streak stats)
+    let totalCommits = 0;
+    try {
+      const graphqlQuery = {
+        query: `
+          query($username: String!) {
+            user(login: $username) {
+              contributionsCollection {
+                contributionCalendar {
+                  totalContributions
+                }
+              }
+            }
+          }
+        `,
+        variables: { username },
+      };
+
+      const graphqlRes = await fetch("https://api.github.com/graphql", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${GITHUB_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(graphqlQuery),
+      });
+
+      if (graphqlRes.ok) {
+        const graphqlData = await graphqlRes.json();
+        totalCommits =
+          graphqlData?.data?.user?.contributionsCollection?.contributionCalendar
+            ?.totalContributions || 0;
+      }
+    } catch (graphqlErr) {
+      console.error("GraphQL error:", graphqlErr);
+    }
+
+    // Language breakdown (top 3)
+    const totalBytes = Object.values(languageTotals).reduce((a, b) => a + b, 0);
+    const languageBreakdown = Object.entries(languageTotals)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([lang, bytes]) => ({
+        lang,
+        pct: totalBytes ? Math.round((bytes / totalBytes) * 100) : 0,
+      }));
+
+    res.json({
+      name: userData.name,
+      login: userData.login,
+      username: userData.login,
+      avatar_url: userData.avatar_url,
+      bio: userData.bio,
+      location: userData.location,
+      company: userData.company,
+      repos: userData.public_repos,
+      followers: userData.followers,
+      commits: totalCommits,
+      languages: languageBreakdown,
+    });
+  } catch (err) {
+    console.error("/api/github/:username error:", err);
+    res.status(500).json({ error: String(err) });
+  }
+});
+
 // ─── Start server ───
 app.listen(PORT, () => {
   console.log(`\n🚀 Server running at http://localhost:${PORT}`);
   console.log(`   Routes:`);
   console.log(`   GET  /                     - Health check`);
-  console.log(`   POST /api/auth/login       - OAuth login`);
+  console.log(`   GET  /api/auth/github      - Start GitHub OAuth`);
+  console.log(`   GET  /api/auth/callback    - GitHub OAuth callback`);
   console.log(`   GET  /api/users            - List all users`);
   console.log(`   GET  /api/users/:id        - Get user by ID`);
   console.log(`   POST /api/profile/:userId  - Fetch & store GitHub profile`);
   console.log(`   GET  /api/reports/:userId  - Get user reports`);
-  console.log(`   POST /api/reports/:userId  - Create a report\n`);
+  console.log(`   POST /api/reports/:userId  - Create a report`);
+  console.log(`   GET  /api/github/:username - Get GitHub profile data\n`);
 });
