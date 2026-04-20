@@ -1,5 +1,4 @@
 import { prisma } from "../../lib/prisma.js";
-import { User } from "../models/User.js";
 
 const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID!;
 const GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET!;
@@ -51,18 +50,16 @@ export class AuthService {
    * Full OAuth flow:
    *  1. Exchange code → access token
    *  2. Fetch GitHub user data
-   *  3. Upsert User in MongoDB (unique by githubId)
-   *  Returns the DB User record + the access token + raw GitHub data
+   *  3. Upsert User in MongoDB
    */
   async loginWithOAuth(
     code: string,
-  ): Promise<{ user: User; accessToken: string; githubUserData: any }> {
-    console.log("🔐 Exchanging OAuth code for access token...");
+  ): Promise<{ user: any; accessToken: string; githubUserData: any }> {
+    console.log("🔐 Exchanging OAuth code...");
     const accessToken = await this.exchangeCodeForToken(code);
 
-    console.log("👤 Fetching GitHub user data...");
+    console.log("👤 Fetching GitHub user...");
     const ghUser = await this.fetchGitHubUser(accessToken);
-    console.log(`   GitHub user: ${ghUser.login} (id: ${ghUser.id})`);
 
     const record = await prisma.user.upsert({
       where: { githubId: String(ghUser.id) },
@@ -83,20 +80,11 @@ export class AuthService {
       },
     });
 
-    console.log(`✅ User upserted in DB: ${record.name} (${record.id})`);
+    console.log(`✅ User authenticated: ${record.name}`);
     return {
-      user: User.fromPrisma(record),
+      user: record,
       accessToken,
       githubUserData: ghUser,
     };
-  }
-
-  /** Placeholder — integrate JWT / express-session here */
-  storeSession(user: User): void {
-    console.log(`Storing session for user ID: ${user.id}`);
-  }
-
-  validateSession(): boolean {
-    return true;
   }
 }

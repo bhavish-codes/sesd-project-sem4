@@ -1,5 +1,4 @@
 import { prisma } from "../../lib/prisma.js";
-import { ProfileData } from "../models/ProfileData.js";
 
 export class GitHubService {
   /**
@@ -10,7 +9,7 @@ export class GitHubService {
     accessToken: string,
     userId: string,
     githubUserData: any,
-  ): Promise<ProfileData> {
+  ): Promise<any> {
     const { login, public_repos, followers, following } = githubUserData;
 
     console.log(`📦 Fetching repositories for ${login}...`);
@@ -84,7 +83,7 @@ export class GitHubService {
     });
 
     console.log(`💾 Profile stored for ${record.username} (id: ${record.id})`);
-    return ProfileData.fromPrisma(record);
+    return record;
   }
 
   /** Fetch repositories for a username (cached from DB first) */
@@ -94,7 +93,7 @@ export class GitHubService {
     });
 
     if (profile) {
-      return profile.repositories as any[];
+      return (profile.repositories as any[]) || [];
     }
 
     return [];
@@ -107,7 +106,7 @@ export class GitHubService {
   async fetchPublicProfile(
     githubUrl: string,
     userId: string,
-  ): Promise<ProfileData> {
+  ): Promise<any> {
     const username = githubUrl.split("/").pop() || "unknown";
     const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 
