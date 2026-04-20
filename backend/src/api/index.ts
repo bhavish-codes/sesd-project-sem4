@@ -151,6 +151,45 @@ export default async function handler(req: any, res: any) {
       return res.redirect(authUrl);
     }
 
+    // ─── Auth: OAuth callback ───
+    if (url?.startsWith("/api/auth/callback")) {
+      const code = req.query?.code;
+      if (!code) {
+        return res.status(400).json({ error: "No code provided" });
+      }
+
+      const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID;
+      const GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET;
+      const GITHUB_REDIRECT_URI = process.env.GITHUB_REDIRECT_URI;
+
+      // Exchange code for token
+      const tokenRes = await fetch(
+        "https://github.com/login/oauth/access_token",
+        {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            client_id: GITHUB_CLIENT_ID,
+            client_secret: GITHUB_CLIENT_SECRET,
+            code,
+          }),
+        },
+      );
+
+      const tokenData = await tokenRes.json();
+      const accessToken = tokenData.access_token;
+
+      if (!accessToken) {
+        return res.status(400).json({ error: "Failed to get access token" });
+      }
+
+      // Redirect to frontend with token (or set cookie)
+      return res.redirect(`${FRONTEND_URL}?token=${accessToken}`);
+    }
+
     // Default 404
     return res.status(404).json({ error: "Not found" });
   } catch (err) {
