@@ -6,7 +6,6 @@ import { prisma } from "../lib/prisma.js";
 import { AuthService } from "./services/AuthService.js";
 import { GitHubService } from "./services/GitHubService.js";
 
-// Mode detection
 const isProd = process.env.NODE_ENV === "production";
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
 const PORT = process.env.PORT || 3001;
@@ -17,20 +16,31 @@ app.use(cors({ origin: FRONTEND_URL, credentials: true }));
 app.use(cookieParser());
 app.use(express.json());
 
-// Service singletons
 const authSvc = new AuthService();
 const githubSvc = new GitHubService();
 
+const router = express.Router();
+
 // ─── Health check ───
-app.get("/", (_req, res) => res.json({ status: "ok", message: "API is running 🚀" }));
+router.get("/", (_req, res) => res.json({ status: "ok", message: "API is running 🚀" }));
 
 // ─── Auth ───
-app.get("/api/auth/github", (_req, res) => {
-  const url = `https://github.com/login/oauth/authorize?client_id=${process.env.GITHUB_CLIENT_ID}&redirect_uri=${process.env.GITHUB_REDIRECT_URI}&scope=user`;
+router.get("/auth/github", (_req, res) => {
+  const clientId = process.env.GITHUB_CLIENT_ID;
+  const redirectUri = process.env.GITHUB_REDIRECT_URI;
+
+  if (!clientId || !redirectUri) {
+    return res.status(500).json({ 
+      error: "OAUTH_CONFIG_MISSING", 
+      message: "GitHub Client ID or Redirect URI not configured in Vercel environment variables." 
+    });
+  }
+
+  const url = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=user`;
   res.redirect(url);
 });
 
-app.get("/api/auth/callback", async (req, res) => {
+router.get("/auth/callback", async (req, res) => {
   try {
     const code = req.query.code as string;
     if (!code) return res.status(400).send("No code provided");
@@ -51,7 +61,7 @@ app.get("/api/auth/callback", async (req, res) => {
   }
 });
 
-app.get("/api/me", async (req, res) => {
+router.get("/me", async (req, res) => {
   const token = req.cookies.token;
   if (!token) return res.json({ loggedIn: false });
 
@@ -67,11 +77,11 @@ app.get("/api/me", async (req, res) => {
 });
 
 // ─── Users & Profiles ───
-app.get("/api/users", async (_req, res) => {
+router.get("/users", async (_req, res) => {
   res.json(await prisma.user.findMany());
 });
 
-app.post("/api/profile/:userId", async (req, res) => {
+router.post("/profile/:userId", async (req, res) => {
   try {
     const profile = await githubSvc.fetchPublicProfile(req.body.githubUrl || "", req.params.userId);
     res.json({ success: true, profile });
@@ -81,11 +91,11 @@ app.post("/api/profile/:userId", async (req, res) => {
 });
 
 // ─── Reports ───
-app.get("/api/reports/:userId", async (req, res) => {
+router.get("/reports/:userId", async (req, res) => {
   res.json(await prisma.report.findMany({ where: { userId: req.params.userId } }));
 });
 
-app.post("/api/reports/:userId", async (req, res) => {
+router.post("/reports/:userId", async (req, res) => {
   try {
     const { summary, skills, suggestions } = req.body;
     const report = await prisma.report.create({
@@ -98,13 +108,26 @@ app.post("/api/reports/:userId", async (req, res) => {
 });
 
 // ─── GitHub Data ───
-app.get("/api/github/:username", async (req, res) => {
+router.get("/github/:username", async (req, res) => {
   try {
     const profile = await githubSvc.fetchPublicProfile(`https://github.com/${req.params.username}`, "temp");
     res.json(profile);
   } catch (err) {
     res.status(500).json({ error: String(err) });
   }
+});
+
+// Mount router on both /api and root to avoid Vercel routing confusion
+app.use("/api", router);
+app.use("/", router);
+
+// Final 404 handler for debugging
+app.use((req, res) => {
+  res.status(404).json({ 
+    error: "NOT_FOUND", 
+    message: `Route ${req.method} ${req.url} not matched in Express.`,
+    debugPath: req.path
+  });
 });
 
 // ─── Start server ───
