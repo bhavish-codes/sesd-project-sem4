@@ -1,16 +1,7 @@
 import "dotenv/config";
-import { Database } from "./services/Database.js";
-import { AuthService } from "./services/AuthService.js";
-import { GitHubService } from "./services/GitHubService.js";
 
 // Vercel production URLs
 const FRONTEND_URL = "https://sesd-project-sem4-lszv.vercel.app";
-const BACKEND_URL = "https://sesd-project-sem4.vercel.app";
-
-// Lazy load services
-const getDatabase = () => new Database();
-const getAuthService = () => new AuthService();
-const getGitHubService = () => new GitHubService();
 
 // ─── Health check ───
 export default async function handler(req: any, res: any) {
@@ -19,7 +10,7 @@ export default async function handler(req: any, res: any) {
   // CORS headers
   res.setHeader("Access-Control-Allow-Origin", FRONTEND_URL);
   res.setHeader("Access-Control-Allow-Credentials", "true");
-  
+
   if (req.method === "OPTIONS") {
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type, Cookie");
@@ -29,7 +20,10 @@ export default async function handler(req: any, res: any) {
   try {
     // ─── Root ───
     if (url === "/") {
-      return res.json({ status: "ok", message: "Git Analyser API is running 🚀" });
+      return res.json({
+        status: "ok",
+        message: "Git Analyser API is running 🚀",
+      });
     }
 
     // ─── GitHub Profile Data ───
@@ -51,7 +45,7 @@ export default async function handler(req: any, res: any) {
         fetch(`https://api.github.com/users/${username}`, { headers }),
         fetch(
           `https://api.github.com/users/${username}/repos?sort=updated&per_page=5`,
-          { headers }
+          { headers },
         ),
       ]);
 
@@ -114,14 +108,18 @@ export default async function handler(req: any, res: any) {
         if (graphqlRes.ok) {
           const graphqlData = await graphqlRes.json();
           totalCommits =
-            graphqlData?.data?.user?.contributionsCollection?.contributionCalendar?.totalContributions || 0;
+            graphqlData?.data?.user?.contributionsCollection
+              ?.contributionCalendar?.totalContributions || 0;
         }
       } catch (graphqlErr) {
         console.error("GraphQL error:", graphqlErr);
       }
 
       // Language breakdown (top 3)
-      const totalBytes = Object.values(languageTotals).reduce((a, b) => a + b, 0);
+      const totalBytes = Object.values(languageTotals).reduce(
+        (a, b) => a + b,
+        0,
+      );
       const languageBreakdown = Object.entries(languageTotals)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 3)
