@@ -44,8 +44,8 @@ export function ResultScreen({ data, setScreen }: Props) {
             TARGET ALIAS <span className="float-right">[REQ. 01]</span>
           </div>
           <div className="flex border-[3px] border-black bg-white mr-12 shadow-[4px_4px_0_0_rgba(0,0,0,1)]">
-            <div className="px-4 py-2 font-mono text-lg font-bold w-48 text-gray-700">
-              torvalds
+            <div className="px-4 py-2 font-mono text-lg font-bold w-48 text-gray-700 truncate">
+              {data?.login || data?.username || "torvalds"}
             </div>
             <div
               className="bg-black text-white px-8 py-2 font-black font-mono flex items-center justify-center cursor-pointer hover:bg-gray-800 uppercase text-lg"
@@ -70,7 +70,7 @@ export function ResultScreen({ data, setScreen }: Props) {
             <div className="aspect-square bg-gray-300 relative overflow-hidden grayscale">
               <picture>
                 <img
-                  src={`https://github.com/${data?.username || "torvalds"}.png`}
+                  src={data?.avatarUrl || `https://github.com/${data?.username || data?.login || "torvalds"}.png`}
                   alt="Profile"
                   className="w-full h-full object-cover"
                 />

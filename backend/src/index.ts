@@ -65,6 +65,8 @@ router.get("/auth/callback", async (req, res) => {
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? "none" : "lax",
+      path: "/", // Explicitly set path to root
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
     });
 
     res.redirect(FRONTEND_URL);
