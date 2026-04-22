@@ -44,14 +44,11 @@ export function ResultScreen({ data, setScreen }: Props) {
             TARGET ALIAS <span className="float-right">[REQ. 01]</span>
           </div>
           <div className="flex border-[3px] border-black bg-white mr-12 shadow-[4px_4px_0_0_rgba(0,0,0,1)]">
-            <div className="px-4 py-2 font-mono text-lg font-bold w-48 text-gray-700 truncate">
-              {data?.login || "unknown"}
-            </div>
             <div
               className="bg-black text-white px-8 py-2 font-black font-mono flex items-center justify-center cursor-pointer hover:bg-gray-800 uppercase text-lg"
               onClick={() => setScreen("MULTI_RESULT")}
             >
-              Scan
+              Explore More
             </div>
           </div>
         </div>
@@ -200,17 +197,29 @@ export function ResultScreen({ data, setScreen }: Props) {
               </div>
             </div>
 
-            <div className="border-[1px] border-[var(--color-brand-red)] p-1.5 flex gap-0.5 flex-wrap flex-1 bg-[#eae6dc]">
+            <div className="border-[1px] border-[var(--color-brand-red)] p-4 flex items-end gap-[2px] flex-1 bg-[#eae6dc] min-h-[120px]">
               {(data?.contributions?.weeks?.flatMap((w: any) => w.contributionDays) || [])
-                .slice(-140) // Keep the last 140 days to fit the UI block perfectly
+                .slice(-140)
                 .map((day: any, i: number) => {
-                  let color = "bg-[#dcd7cd]";
+                  const count = day.contributionCount || 0;
+                  
+                  // Color thresholds
+                  let color = "bg-[#b1a99f]"; 
+                  if (count === 0) color = "bg-[#dcd7cd] opacity-50"; 
+                  else if (count > 10) color = "bg-[var(--color-brand-red)]";
+                  else if (count > 5) color = "bg-black";
 
-                  if (day.contributionCount > 10) color = "bg-[var(--color-brand-red)]";
-                  else if (day.contributionCount > 5) color = "bg-black";
-                  else if (day.contributionCount > 0) color = "bg-[#b1a99f]";
+                  // Height scaling (assuming 15 commits is max height for this visualizer)
+                  const heightPct = count === 0 ? 4 : Math.min(100, Math.max(10, (count / 15) * 100));
 
-                  return <div key={i} className={`w-3 h-3 ${color}`}></div>;
+                  return (
+                    <div 
+                      key={day.date || i} 
+                      className={`flex-1 ${color} hover:opacity-75 transition-all cursor-crosshair`}
+                      style={{ height: `${heightPct}%` }}
+                      title={`${count} commits on ${day.date}`}
+                    ></div>
+                  );
                 })}
             </div>
           </div>
