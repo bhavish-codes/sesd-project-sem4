@@ -46,7 +46,7 @@ export function LoadingScreen({ setScreen, setData, data }: Props) {
         // Final tiny delay before transition
         // await new Promise((resolve) => setTimeout(resolve, 500));
         setData({ 
-          formattedData, 
+          ...formattedData, 
           languages: rawData.languages,
           contributions: rawData.contributions 
         });
