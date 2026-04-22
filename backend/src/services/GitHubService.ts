@@ -207,9 +207,9 @@ export class GitHubService {
     };
 
     // 🔐 OPTIONAL: store in DB
-    if (userId) {
-      await this.fetchAndStoreProfile("", userId, result.profile, allRepos);
-    }
+    // if (userId) {
+    //   await this.fetchAndStoreProfile("", userId, result.profile, allRepos);
+    // }
 
     return result;
   }

@@ -147,7 +147,7 @@ router.post("/reports/:userId", async (req, res) => {
 // ─── GitHub Data ───
 router.get("/github/:username", async (req, res) => {
   try {
-    const profile = await githubSvc.fetchPublicProfile(`https://github.com/${req.params.username}`, "temp");
+    const profile = await githubSvc.fetchPublicProfile(`https://github.com/${req.params.username}`);
     res.json(profile);
   } catch (err) {
     res.status(500).json({ error: String(err) });
