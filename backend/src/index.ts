@@ -5,13 +5,18 @@ import cookieParser from "cookie-parser";
 import { prisma } from "../lib/prisma.js";
 import { AuthService } from "./services/AuthService.js";
 import { GitHubService } from "./services/GitHubService.js";
+import jwt from "jsonwebtoken";
 
 const isProd = process.env.NODE_ENV === "production";
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
 const PORT = process.env.PORT || 3001;
-
+const JWT_SECRET = process.env.JWT_SECRET || ""
 const app = express();
 
+
+interface JwtUserPayload {
+  userId: string;
+}
 // Robust CORS for Vercel cross-domain cookies
 const allowedOrigins = [FRONTEND_URL, "https://sesd-project-sem4-lszv.vercel.app"];
 app.use(
@@ -60,8 +65,9 @@ router.get("/auth/callback", async (req, res) => {
 
     const { user, accessToken, githubUserData } = await authSvc.loginWithOAuth(code);
     await githubSvc.fetchAndStoreProfile(accessToken, user.id, githubUserData);
-
-    res.cookie("token", accessToken, {
+    
+    const jwtToken = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: "24h" });
+    res.cookie("token", jwtToken, {
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? "none" : "lax",
@@ -78,16 +84,32 @@ router.get("/auth/callback", async (req, res) => {
 
 router.get("/me", async (req, res) => {
   const token = req.cookies.token;
-  if (!token) return res.json({ loggedIn: false });
+
+  if (!token) {
+    return res.json({ loggedIn: false });
+  }
 
   try {
-    const users = await prisma.user.findMany({ take: 1, orderBy: { id: "desc" } });
-    if (users.length > 0) {
-      return res.json({ loggedIn: true, ...users[0], commits: Math.floor(Math.random() * 100) + 10 });
+    const decoded = jwt.verify(token, JWT_SECRET) as JwtUserPayload;
+
+    // 👇 extract userId from token
+    const userId = decoded.userId;
+
+    // 👇 fetch correct user
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      return res.json({ loggedIn: false });
     }
-    res.json({ loggedIn: false });
+
+    res.json({
+      loggedIn: true,
+      user,
+    });
   } catch (err) {
-    res.json({ loggedIn: false });
+    return res.json({ loggedIn: false });
   }
 });
 

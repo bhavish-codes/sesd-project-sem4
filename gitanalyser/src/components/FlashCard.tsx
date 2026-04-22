@@ -26,24 +26,19 @@ export function FlashCard({
           process.env.NEXT_PUBLIC_API_URL ||
           "https://sesd-project-sem4.vercel.app";
 
-        console.log(`[AUTH] Checking session at ${BACKEND_URL}/api/me`);
+        // console.log(`[AUTH] Checking session at ${BACKEND_URL}/api/me`);
 
         const res = await fetch(`${BACKEND_URL}/api/me`, {
-          credentials: "include",
-          headers: {
-            Accept: "application/json",
-          },
-        });
+        credentials: "include",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      });
 
         // Prevention for 404 HTML pages being parsed as JSON
         if (!res.ok) {
           console.error(`[AUTH] Backend returned ${res.status}`);
-          return;
-        }
-
-        const contentType = res.headers.get("content-type");
-        if (!contentType || !contentType.includes("application/json")) {
-          console.error("[AUTH] Backend didn't return JSON");
           return;
         }
 
