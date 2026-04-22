@@ -45,9 +45,7 @@ export function ResultScreen({ data, setScreen }: Props) {
           </div>
           <div className="flex border-[3px] border-black bg-white mr-12 shadow-[4px_4px_0_0_rgba(0,0,0,1)]">
             <div className="px-4 py-2 font-mono text-lg font-bold w-48 text-gray-700 truncate">
-              {data?.login ||
-                data?.username ||
-                "torvalds"}
+              {data?.login || "unknown"}
             </div>
             <div
               className="bg-black text-white px-8 py-2 font-black font-mono flex items-center justify-center cursor-pointer hover:bg-gray-800 uppercase text-lg"
@@ -66,7 +64,7 @@ export function ResultScreen({ data, setScreen }: Props) {
           <div className="border-[3px] border-black p-2 bg-white relative mb-6 shadow-[6px_6px_0_rgba(0,0,0,0.1)]">
             {/* Lvl Sticker */}
             <div className="absolute -top-4 -right-4 bg-[var(--color-brand-red)] text-black font-black border-[3px] border-black rounded-lg px-3 py-1 font-mono transform rotate-12 shadow-[3px_3px_0_rgba(0,0,0,1)] z-10 z-20 text-lg">
-              LVL. 99
+              LVL. {Math.floor((data?.commits || 0) / 1000)}
             </div>
             {/* Mock Image Placeholder */}
             <div className="aspect-square bg-gray-300 relative overflow-hidden grayscale">
@@ -74,7 +72,7 @@ export function ResultScreen({ data, setScreen }: Props) {
                 <img
                   src={
                     data?.avatarUrl ||
-                    `https://github.com/${data?.username || data?.login || "torvalds"}.png`
+                    `https://avatars.githubusercontent.com/${data?.login}`
                   }
                   alt="Profile"
                   className="w-full h-full object-cover"
@@ -118,11 +116,11 @@ export function ResultScreen({ data, setScreen }: Props) {
           <div className="flex gap-4 border-[3px] border-black divide-x-[3px] divide-black shrink-0 relative overflow-hidden">
             {/* Faux background heart outline or curved line could go absolute here, kept minimal */}
             {[
-              { label: "COMMITS", val: data?.commits || "14K" },
-              { label: "REPOS", val: data?.repos || "8" },
+              { label: "COMMITS", val: data?.commits || "0" },
+              { label: "REPOS", val: data?.repos || "0" },
               {
                 label: "FOLLOWERS",
-                val: data?.followers || "203K",
+                val: data?.followers || "0",
               },
             ].map((stat, i) => (
               <div
@@ -158,7 +156,7 @@ export function ResultScreen({ data, setScreen }: Props) {
                       pct: Math.round(Number(pct)),
                     }))
                     .sort((a, b) => b.pct - a.pct)
-                    .slice(0, 10)
+                    .slice(0, 5)
                 : [
                     { lang: "C", pct: 85 },
                     { lang: "MAKEFILE", pct: 10 },
@@ -203,15 +201,17 @@ export function ResultScreen({ data, setScreen }: Props) {
             </div>
 
             <div className="border-[1px] border-[var(--color-brand-red)] p-1.5 flex gap-0.5 flex-wrap flex-1 bg-[#eae6dc]">
-              {Array.from({ length: 140 }).map((_, i) => {
-                // Randomize pattern mostly light, some red, some black
-                const r = Math.random();
-                let color = "bg-[#dcd7cd]"; // light
-                if (r > 0.85) color = "bg-[var(--color-brand-red)]";
-                else if (r > 0.75) color = "bg-black";
-                else if (r > 0.95) color = "bg-[#b1a99f]";
-                return <div key={i} className={`w-3 h-3 ${color}`}></div>;
-              })}
+              {(data?.contributions?.weeks?.flatMap((w: any) => w.contributionDays) || [])
+                .slice(-140) // Keep the last 140 days to fit the UI block perfectly
+                .map((day: any, i: number) => {
+                  let color = "bg-[#dcd7cd]";
+
+                  if (day.contributionCount > 10) color = "bg-[var(--color-brand-red)]";
+                  else if (day.contributionCount > 5) color = "bg-black";
+                  else if (day.contributionCount > 0) color = "bg-[#b1a99f]";
+
+                  return <div key={i} className={`w-3 h-3 ${color}`}></div>;
+                })}
             </div>
           </div>
         </div>

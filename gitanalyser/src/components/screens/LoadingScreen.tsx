@@ -45,7 +45,11 @@ export function LoadingScreen({ setScreen, setData, data }: Props) {
 
         // Final tiny delay before transition
         // await new Promise((resolve) => setTimeout(resolve, 500));
-        setData(formattedData);
+        setData({ 
+          formattedData, 
+          languages: rawData.languages,
+          contributions: rawData.contributions 
+        });
         setScreen("RESULT");
       } catch (err) {
         console.error("Failed to fetch data:", err);
