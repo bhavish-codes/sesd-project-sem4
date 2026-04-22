@@ -6,7 +6,7 @@ export class GitHubService {
    * If accessToken is provided, it fetches from /user/repos (private + public).
    * If not, it expects repos to be passed in (from public fetch).
    */
-  async fetchAndStoreProfile(
+  public async fetchAndStoreProfile(
     accessToken: string,
     userId: string,
     githubUserData: any,
@@ -91,7 +91,7 @@ export class GitHubService {
   /**
    * Fetch profile data for a public GitHub URL.
    */
-  async fetchPublicProfile(githubUrl: string, userId?: string): Promise<any> {
+  public async fetchPublicProfile(githubUrl: string, userId?: string): Promise<any> {
     const username = githubUrl.replace(/\/$/, "").split("/").pop() || "unknown";
     const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 

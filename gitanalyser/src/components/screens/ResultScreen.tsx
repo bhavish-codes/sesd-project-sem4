@@ -45,7 +45,9 @@ export function ResultScreen({ data, setScreen }: Props) {
           </div>
           <div className="flex border-[3px] border-black bg-white mr-12 shadow-[4px_4px_0_0_rgba(0,0,0,1)]">
             <div className="px-4 py-2 font-mono text-lg font-bold w-48 text-gray-700 truncate">
-              {data?.login || data?.username || "torvalds"}
+              {data.formattedData?.login ||
+                data.formattedData?.username ||
+                "torvalds"}
             </div>
             <div
               className="bg-black text-white px-8 py-2 font-black font-mono flex items-center justify-center cursor-pointer hover:bg-gray-800 uppercase text-lg"
@@ -70,7 +72,10 @@ export function ResultScreen({ data, setScreen }: Props) {
             <div className="aspect-square bg-gray-300 relative overflow-hidden grayscale">
               <picture>
                 <img
-                  src={data?.avatarUrl || `https://github.com/${data?.username || data?.login || "torvalds"}.png`}
+                  src={
+                    data.formattedData?.avatarUrl ||
+                    `https://github.com/${data.formattedData?.username || data.formattedData?.login || "torvalds"}.png`
+                  }
                   alt="Profile"
                   className="w-full h-full object-cover"
                 />
@@ -79,25 +84,27 @@ export function ResultScreen({ data, setScreen }: Props) {
           </div>
 
           <h2 className="text-4xl font-['Playfair_Display',var(--font-serif)] font-bold uppercase leading-tight mt-2">
-            {data?.name || data?.login || "Linus Torvalds"}
+            {data.formattedData?.name ||
+              data.formattedData?.login ||
+              "Linus Torvalds"}
           </h2>
           <div className="text-[var(--color-brand-red)] font-bold font-mono tracking-widest text-sm mb-6">
-            @{data?.username || "torvalds"}
+            @{data.formattedData?.username || "torvalds"}
           </div>
 
           <p className="font-mono text-xs leading-relaxed text-gray-800">
-            {data?.bio || "No bio available for this operative."}
+            {data.formattedData?.bio || "No bio available for this operative."}
           </p>
 
           <div className="font-mono text-xs font-bold tracking-widest mb-6 uppercase">
-            [LOC: {data?.location || "UNKNOWN"}]
+            [LOC: {data.formattedData?.location || "UNKNOWN"}]
           </div>
 
           <div className="border-b-[3px] border-black mb-6"></div>
 
           <div className="flex flex-wrap gap-2 mb-4">
             <span className="border-[2px] border-black px-2 py-1 text-[10px] font-bold tracking-widest uppercase">
-              {data?.company || "INDEPENDENT"}
+              {data.formattedData?.company || "INDEPENDENT"}
             </span>
             <span className="border-[2px] border-black px-2 py-1 text-[10px] font-bold tracking-widest uppercase">
               VERIFIED
@@ -111,9 +118,12 @@ export function ResultScreen({ data, setScreen }: Props) {
           <div className="flex gap-4 border-[3px] border-black divide-x-[3px] divide-black shrink-0 relative overflow-hidden">
             {/* Faux background heart outline or curved line could go absolute here, kept minimal */}
             {[
-              { label: "COMMITS", val: data?.commits || "14K" },
-              { label: "REPOS", val: data?.repos || "8" },
-              { label: "FOLLOWERS", val: data?.followers || "203K" },
+              { label: "COMMITS", val: data.formattedData?.commits || "14K" },
+              { label: "REPOS", val: data.formattedData?.repos || "8" },
+              {
+                label: "FOLLOWERS",
+                val: data.formattedData?.followers || "203K",
+              },
             ].map((stat, i) => (
               <div
                 key={i}
@@ -141,8 +151,11 @@ export function ResultScreen({ data, setScreen }: Props) {
             </div>
 
             <div className="space-y-4">
-              {(data?.languages && data.languages.length > 0
-                ? data.languages
+              {(data?.languages && Object.keys(data.languages).length > 0
+                ? Object.entries(data.languages).map(([lang, pct]) => ({
+                    lang,
+                    pct,
+                  }))
                 : [
                     { lang: "C", pct: 85 },
                     { lang: "MAKEFILE", pct: 10 },
@@ -159,7 +172,6 @@ export function ResultScreen({ data, setScreen }: Props) {
                       style={{ width: `${item.pct}%` }}
                     ></div>
                     <div className="flex-1 flex opacity-20">
-                      {/* Faux grid sections inside the empty bar */}
                       {Array.from({ length: 10 }).map((_, i) => (
                         <div
                           key={i}

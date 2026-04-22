@@ -1,11 +1,11 @@
-GitHub Profile Reviewer (AI-Powered)
+# GitHub Profile Reviewer (Espionage/Terminal Theme)
 
-1.Web app where users log in and paste a public GitHub profile URL to receive an AI-generated evaluation
+## Core Concept
+A full-stack, state-driven web application that acts as a "classified portal" to extract and analyze GitHub developers' public profiles.
 
-2.Fetches repositories, languages, and contribution data using the GitHub API
-
-3.Analyzes development patterns to identify skills and technical strengths
-
-4.Generates a concise summary of activity level and improvement suggestions
-
-5.Helps developers understand and enhance their coding portfolio
+## Key Features
+1. **Secure Handshake Authentication**: Users authenticate via a custom GitHub OAuth flow styled as an espionage portal gateway.
+2. **Real-Time Data Extraction**: The backend fetches and aggregates repositories, language volume, and contribution heatmaps using GitHub's REST and GraphQL APIs.
+3. **Extraction Matrix & Linguistic Formula**: Converts raw code metrics into highly stylized visualizations (brutalist graphs, tracking logs).
+4. **Finite-State Machine Architecture**: Replaces standard web navigation with seamless, animated transition states (`AUTH` -> `LOADING` -> `RESULT`).
+5. **AI-Ready Analytics**: Designed to eventually pipe the aggregated developer footprint into an AI model to generate concise, human-readable insights on developer patterns.

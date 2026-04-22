@@ -1,20 +1,23 @@
 ```mermaid
 classDiagram
 
+    %% Frontend Components
     class App {
         +screen: ScreenState
-        +data: ProfileData
+        +data: UserData
         +setScreen()
         +setData()
     }
 
     class FlashCard {
         +screen: ScreenState
+        +data: UserData
         +renderScreen()
+        +checkAuthSession()
     }
 
     class AuthScreen {
-        +initiateHandshake()
+        +initiateGitHubOAuth()
     }
 
     class LoadingScreen {
@@ -32,22 +35,28 @@ classDiagram
         +displayBatchResults()
     }
 
+    %% Backend Services
+    class ExpressApp {
+        +router: Router
+        +setupCORS()
+        +setupRoutes()
+    }
+
+    class AuthService {
+        +exchangeCodeForToken()
+        +fetchGitHubUser()
+        +loginWithOAuth()
+    }
+
     class GitHubService {
-        +fetchProfile(username: string)
-        +fetchRepos(username: string)
+        +fetchAndStoreProfile()
+        +fetchPublicProfile()
     }
 
-    class AIAnalysisService {
-        +generateInsights(data: ProfileData)
-    }
-
-    class ProfileData {
-        +username: string
-        +commits: string
-        +repos: string
-        +followers: string
-        +languages: list
-        +matrixData: object
+    class PrismaDB {
+        +User: Model
+        +ProfileData: Model
+        +Report: Model
     }
     
     App --> FlashCard
@@ -55,7 +64,13 @@ classDiagram
     FlashCard --> LoadingScreen
     FlashCard --> ResultScreen
     FlashCard --> MultiResultScreen
-    LoadingScreen --> GitHubService
-    LoadingScreen --> AIAnalysisService
-    ResultScreen --> ProfileData
+    
+    AuthScreen ..> ExpressApp : Requests OAuth Flow
+    FlashCard ..> ExpressApp : Validates Session
+    LoadingScreen ..> ExpressApp : Fetches Aggregated Data
+    
+    ExpressApp --> AuthService
+    ExpressApp --> GitHubService
+    AuthService --> PrismaDB
+    GitHubService --> PrismaDB
 ```

@@ -6,7 +6,7 @@ const GITHUB_REDIRECT_URI = process.env.GITHUB_REDIRECT_URI!;
 
 export class AuthService {
   /** Exchange OAuth code for an access token from GitHub */
-  async exchangeCodeForToken(code: string): Promise<string> {
+  private async exchangeCodeForToken(code: string): Promise<string> {
     const response = await fetch(
       "https://github.com/login/oauth/access_token",
       {
@@ -32,7 +32,7 @@ export class AuthService {
   }
 
   /** Fetch the authenticated GitHub user's data using their access token */
-  async fetchGitHubUser(accessToken: string): Promise<any> {
+  private async fetchGitHubUser(accessToken: string): Promise<any> {
     const response = await fetch("https://api.github.com/user", {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -52,7 +52,7 @@ export class AuthService {
    *  2. Fetch GitHub user data
    *  3. Upsert User in MongoDB
    */
-  async loginWithOAuth(
+  public async loginWithOAuth(
     code: string,
   ): Promise<{ user: any; accessToken: string; githubUserData: any }> {
     console.log("🔐 Exchanging OAuth code...");

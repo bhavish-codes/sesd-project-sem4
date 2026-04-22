@@ -1,23 +1,36 @@
 ```mermaid
 sequenceDiagram
     actor User
-    participant AuthScreen as Auth Screen (FSM: AUTH)
-    participant LoadingScreen as Loading Screen (FSM: LOADING)
-    participant ResultScreen as Result Screen (FSM: RESULT)
-    participant GitHubAPI as GitHub API
-    participant AIService as AI Service
+    participant Frontend as React App (FSM)
+    participant Backend as Express API
+    participant GitHub as GitHub API
+    participant DB as MongoDB (Prisma)
 
-    User->>AuthScreen: Click "Authenticate via Github"
-    AuthScreen->>LoadingScreen: setScreen("LOADING")
+    User->>Frontend: Click "Authenticate via Github"
+    Frontend->>Backend: GET /api/auth/github
+    Backend->>GitHub: Redirect to OAuth Authorize
+    GitHub-->>User: Prompt for Authorization
+    User->>GitHub: Authorize App
+    GitHub->>Backend: GET /api/auth/callback?code=...
     
-    LoadingScreen->>LoadingScreen: Show progress logs ("FETCHING REPOS...")
-    LoadingScreen->>GitHubAPI: Fetch User Profile Data
-    GitHubAPI-->>LoadingScreen: Returns Profile & Repo Data
+    Backend->>GitHub: Exchange Code for Access Token
+    GitHub-->>Backend: Access Token
+    Backend->>GitHub: Fetch User Profile
+    GitHub-->>Backend: User Data
     
-    LoadingScreen->>AIService: Generate insights from data
-    AIService-->>LoadingScreen: AI insights
+    Backend->>DB: Upsert User Data
+    Backend->>Frontend: Set JWT Cookie & Redirect
     
-    LoadingScreen->>ResultScreen: setScreen("RESULT") + setData(...)
+    Frontend->>Backend: GET /api/me (Validate Session)
+    Backend-->>Frontend: { loggedIn: true, user }
+    Frontend->>Frontend: setScreen("LOADING")
     
-    ResultScreen-->>User: Display Extraction Matrix, Linguistic Formula, and Stats
+    Frontend->>Backend: GET /api/github/:username
+    Backend->>GitHub: Fetch Repos, Languages, Heatmap
+    GitHub-->>Backend: Raw GitHub Data
+    Backend->>DB: Aggregate & Cache ProfileData
+    Backend-->>Frontend: Formatted JSON Payload
+    
+    Frontend->>Frontend: setScreen("RESULT")
+    Frontend-->>User: Display Extraction Matrix & Stats
 ```

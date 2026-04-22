@@ -41,7 +41,7 @@ export function LoadingScreen({ setScreen, setData, data }: Props) {
           languages: languagesArray
         };
 
-        setData(formattedData);
+        setData({ formattedData, languagesArray });
 
         setLogs((prev) => [...prev, "DATA_PACKETS_RECEIVED.", "DECODING..."]);
 
