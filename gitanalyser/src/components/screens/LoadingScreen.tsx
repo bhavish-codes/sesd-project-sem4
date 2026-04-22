@@ -24,13 +24,6 @@ export function LoadingScreen({ setScreen, setData, data }: Props) {
 
         const rawData = await res.json();
         
-        const languagesArray = rawData.languages
-          ? Object.entries(rawData.languages)
-              .map(([lang, pct]) => ({ lang, pct: Math.round(Number(pct)) }))
-              .sort((a, b) => b.pct - a.pct)
-              .slice(0, 5)
-          : [];
-
         const formattedData = {
           ...rawData.profile,
           avatarUrl: rawData.profile?.avatar,
@@ -38,10 +31,10 @@ export function LoadingScreen({ setScreen, setData, data }: Props) {
           commits: rawData.contributions?.totalContributions || "0",
           repos: rawData.stats?.totalRepos || "0",
           followers: rawData.stats?.totalFollowers || "0",
-          languages: languagesArray
+          languages: rawData.languages
         };
 
-        setData({ formattedData, languagesArray });
+        
 
         setLogs((prev) => [...prev, "DATA_PACKETS_RECEIVED.", "DECODING..."]);
 
@@ -52,7 +45,7 @@ export function LoadingScreen({ setScreen, setData, data }: Props) {
 
         // Final tiny delay before transition
         // await new Promise((resolve) => setTimeout(resolve, 500));
-
+        setData(formattedData);
         setScreen("RESULT");
       } catch (err) {
         console.error("Failed to fetch data:", err);
