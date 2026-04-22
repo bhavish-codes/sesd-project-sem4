@@ -152,10 +152,13 @@ export function ResultScreen({ data, setScreen }: Props) {
 
             <div className="space-y-4">
               {(data?.languages && Object.keys(data.languages).length > 0
-                ? Object.entries(data.languages).map(([lang, pct]) => ({
-                    lang,
-                    pct,
-                  }))
+                ? Object.entries(data.languages)
+                    .map(([lang, pct]) => ({
+                      lang,
+                      pct: Math.round(Number(pct)),
+                    }))
+                    .sort((a, b) => b.pct - a.pct)
+                    .slice(0, 10)
                 : [
                     { lang: "C", pct: 85 },
                     { lang: "MAKEFILE", pct: 10 },
