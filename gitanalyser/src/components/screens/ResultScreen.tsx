@@ -46,7 +46,7 @@ export function ResultScreen({ data, setScreen }: Props) {
           <div className="flex border-[3px] border-black bg-white mr-12 shadow-[4px_4px_0_0_rgba(0,0,0,1)]">
             <div
               className="bg-black text-white px-8 py-2 font-black font-mono flex items-center justify-center cursor-pointer hover:bg-gray-800 uppercase text-lg"
-              onClick={() => setScreen("MULTI_RESULT")}
+              onClick={() => setScreen("RESULT")}
             >
               Explore More
             </div>

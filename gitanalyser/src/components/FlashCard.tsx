@@ -75,7 +75,7 @@ export function FlashCard({
       {screen === "RESULT" && (
         <ResultScreen data={data} setScreen={setScreen} />
       )}
-      {screen === "MULTI_RESULT" && <MultiResultScreen />}
+      {screen === "MULTI_RESULT" && <MultiResultScreen/>}
     </div>
   );
 }
