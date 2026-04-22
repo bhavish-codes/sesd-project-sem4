@@ -109,42 +109,20 @@ export class GitHubService {
     });
     const userData = userRes.ok ? await userRes.json() : {};
 
-    // 🔹 2. GET ALL REPOS (pagination)
-    let page = 1;
-    let allRepos: any[] = [];
-
-    while (true) {
-      const res = await fetch(
-        `https://api.github.com/users/${username}/repos?per_page=100&page=${page}`,
-        { headers },
-      );
-
-      const repos = res.ok ? await res.json() : [];
-
-      if (!repos.length) break;
-
-      allRepos = [...allRepos, ...repos];
-      page++;
-    }
-
-    // 🔹 3. LANGUAGE AGGREGATION
-    const langStats: Record<string, number> = {};
-
-    for (const repo of allRepos) {
-      const langRes = await fetch(repo.languages_url, { headers });
-      const langs = langRes.ok ? await langRes.json() : {};
-
-      for (const lang in langs) {
-        langStats[lang] = (langStats[lang] || 0) + langs[lang];
+    // 🔹 2. EXTERNAL LANGUAGE AGGREGATION (github-readme-stats)
+    let langPercent: Record<string, number> = {};
+    try {
+      const svgRes = await fetch(`https://github-readme-stats.vercel.app/api/top-langs/?username=${username}`);
+      if (svgRes.ok) {
+        const svgText = await svgRes.text();
+        const regex = /data-testid="lang-name"[\s\S]*?>([^<]+)<\/text>[\s\S]*?class="lang-name">([^<]+)%<\/text>/g;
+        let match;
+        while ((match = regex.exec(svgText)) !== null) {
+          langPercent[match[1]] = parseFloat(match[2]);
+        }
       }
-    }
-
-    // Convert to percentage
-    const total = Object.values(langStats).reduce((a, b) => a + b, 0);
-    const langPercent: Record<string, number> = {};
-
-    for (const lang in langStats) {
-      langPercent[lang] = total ? (langStats[lang] / total) * 100 : 0;
+    } catch (error) {
+      console.error("[GitHubService] Failed to fetch language stats:", error);
     }
 
     // 🔹 4. GRAPHQL (commits + heatmap)
@@ -197,13 +175,13 @@ export class GitHubService {
         location: userData.location,
       },
       stats: {
-        totalRepos: allRepos.length,
+        totalRepos: userData.public_repos || 0,
         totalFollowers: userData.followers,
         totalFollowing: userData.following,
       },
       languages: langPercent,
       contributions,
-      repos: allRepos,
+      repos: [],
     };
 
     // 🔐 OPTIONAL: store in DB
