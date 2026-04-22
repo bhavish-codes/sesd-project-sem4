@@ -44,9 +44,9 @@ export function FlashCard({
 
         const userData = await res.json();
 
-        if (userData.loggedIn) {
-          console.log("[AUTH] Logged in as", userData.login);
-          setData(userData);
+        if (userData.loggedIn && userData.user) {
+          console.log("[AUTH] Logged in as", userData.user.login);
+          setData(userData.user);
           setScreen("LOADING");
         }
       } catch (err) {

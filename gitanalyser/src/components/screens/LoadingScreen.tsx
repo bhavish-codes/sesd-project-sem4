@@ -22,8 +22,26 @@ export function LoadingScreen({ setScreen, setData, data }: Props) {
 
         if (!res.ok) throw new Error(`API error: ${res.status}`);
 
-        const userData = await res.json();
-        setData(userData);
+        const rawData = await res.json();
+        
+        const languagesArray = rawData.languages
+          ? Object.entries(rawData.languages)
+              .map(([lang, pct]) => ({ lang, pct: Math.round(Number(pct)) }))
+              .sort((a, b) => b.pct - a.pct)
+              .slice(0, 5)
+          : [];
+
+        const formattedData = {
+          ...rawData.profile,
+          avatarUrl: rawData.profile?.avatar,
+          username: rawData.profile?.login,
+          commits: rawData.contributions?.totalContributions || "0",
+          repos: rawData.stats?.totalRepos || "0",
+          followers: rawData.stats?.totalFollowers || "0",
+          languages: languagesArray
+        };
+
+        setData(formattedData);
 
         setLogs((prev) => [...prev, "DATA_PACKETS_RECEIVED.", "DECODING..."]);
 
