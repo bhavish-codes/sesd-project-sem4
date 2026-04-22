@@ -143,3 +143,4 @@ Icon
 *.sln
 *.sw?
 *.vim
+.vscode
