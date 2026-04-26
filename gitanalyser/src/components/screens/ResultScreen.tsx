@@ -61,7 +61,7 @@ export function ResultScreen({ data, setScreen }: Props) {
           <div className="border-[3px] border-black p-2 bg-white relative mb-6 shadow-[6px_6px_0_rgba(0,0,0,0.1)]">
             {/* Lvl Sticker */}
             <div className="absolute -top-4 -right-4 bg-[var(--color-brand-red)] text-black font-black border-[3px] border-black rounded-lg px-3 py-1 font-mono transform rotate-12 shadow-[3px_3px_0_rgba(0,0,0,1)] z-10 z-20 text-lg">
-              LVL. {Math.floor((data?.commits || 0) / 1000)}
+              LVL. {Math.floor(Number(data?.commits || 0) / 1000)}
             </div>
             {/* Mock Image Placeholder */}
             <div className="aspect-square bg-gray-300 relative overflow-hidden grayscale">
