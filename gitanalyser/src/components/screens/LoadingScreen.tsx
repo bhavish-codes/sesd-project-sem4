@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { Screen } from "@/types";
+import { ProfileData, Screen } from "@/types";
 
 interface Props {
   setScreen: (screen: Screen) => void;
-  setData: (data: any) => void;
-  data: any;
+  setData: (data: ProfileData) => void;
+  data: Partial<ProfileData> & { login?: string };
 }
 
 export function LoadingScreen({ setScreen, setData, data }: Props) {

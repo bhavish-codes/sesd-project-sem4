@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Screen } from "@/types";
+import { ProfileData, Screen } from "@/types";
 
 interface Props {
   setScreen: (screen: Screen) => void;
-  setData: (data: any) => void;
+  setData: (data: Partial<ProfileData> | any) => void; // Using any here for the loading state transition which is a partial
 }
 
 interface Target {
@@ -126,6 +126,7 @@ export function MultiResultScreen({ setScreen, setData }: Props) {
               <div className="p-4 border-b-[2px] border-black bg-white/50">
                 <div className="aspect-square bg-gray-200 w-full overflow-hidden border-[2px] border-black relative">
                   {target.avatarUrl ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
                     <img 
                       src={target.avatarUrl} 
                       alt={target.username} 

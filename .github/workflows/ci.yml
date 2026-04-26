@@ -20,12 +20,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
           cache-dependency-path: './backend/package-lock.json'
 
       - name: Install Dependencies
-        run: npm install
+        run: npm install --no-audit
 
       - name: Generate Prisma Client
         run: npx prisma generate
@@ -46,12 +46,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
           cache-dependency-path: './gitanalyser/package-lock.json'
 
       - name: Install Dependencies
-        run: npm install
+        run: npm install --no-audit
 
       - name: Lint Check
         run: npm run lint

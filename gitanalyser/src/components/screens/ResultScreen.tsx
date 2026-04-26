@@ -1,7 +1,7 @@
-import { Screen } from "@/types";
+import { ProfileData, Screen } from "@/types";
 
 interface Props {
-  data: any;
+  data: ProfileData;
   setScreen: (screen: Screen) => void;
 }
 
@@ -66,6 +66,7 @@ export function ResultScreen({ data, setScreen }: Props) {
             {/* Mock Image Placeholder */}
             <div className="aspect-square bg-gray-300 relative overflow-hidden grayscale">
               <picture>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={
                     data?.avatarUrl ||
