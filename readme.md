@@ -1,10 +1,28 @@
 # 🕶️ Git Analyser: Marginal Extraction
 
 ![Status](https://img.shields.io/badge/Status-Active-success)
-![Version](https://img.shields.io/badge/Version-1.0.0-blue)
-![License](https://img.shields.io/badge/License-MIT-lightgrey)
+![Version](https://img.shields.io/badge/Version-1.1.0-blue)
+![CI](https://img.shields.io/badge/CI/CD-GitHub%20Actions-orange)
 
 A highly stylized, finite-state-machine (FSM) driven web application designed to act as an "encrypted portal" for analyzing GitHub developers' public profiles. The system features a brutalist, espionage-themed aesthetic, evaluating coder activity and projecting it via "Extraction Matrices" and "Linguistic Formulas."
+
+---
+
+## 📐 System Architecture
+
+```mermaid
+graph TD
+    A[User] -->|Secure Handshake| B[Frontend - Next.js]
+    B -->|OAuth Callback + JWT| C[Backend - Express]
+    C -->|Verify Session| D[Auth Middleware]
+    C -->|Fetch Intelligence| E[GitHub API REST/GraphQL]
+    E -->|Extract Metadata| F[GitHubService]
+    F -->|Persist History| G[MongoDB Atlas]
+    F -->|Aggregate Stats| H[Result Extraction]
+    H -->|Analysis Data| B
+    B -->|View Archives| I[Classified Contacts]
+    I -->|Fetch Targets| C
+```
 
 ---
 
@@ -12,68 +30,11 @@ A highly stylized, finite-state-machine (FSM) driven web application designed to
 
 - 🛡️ **State-Driven Architecture**: Trades traditional page routing for a React multi-screen Finite State Machine (`AUTH` → `LOADING` → `RESULT` → `MULTI_RESULT`).
 - 💻 **Encrypted Portal UI**: Operates via a "Secure Handshake" interface with strict brutalist styling and terminal-like diagnostics.
+- 📂 **Classified Contacts**: A global search history feature that persists every analyzed subject. Data is uniquely indexed to ensure a clean database of intelligence.
 - 📊 **Extraction Matrix**: A visual heat-map block simulating complex codebase analysis based on real GitHub commit activity.
-- 🧮 **Linguistic Formula**: Translates programming languages into a volumetric composition bar chart.
+- 🧮 **Linguistic Formula**: Translates programming languages into a volumetric composition bar chart using external aggregation.
 - 🔄 **Seamless Loading Flow**: Animated transitions showing faux trace routes, latency data, and system logs while data decodes.
-- ⚙️ **Robust Backend**: Express.js server handling GitHub OAuth, token management, and profile data fetching via GraphQL & REST APIs.
-
----
-
-## 🛠️ Technology Stack
-
-| Architecture Layer | Technology |
-|-------------------|------------|
-| **Frontend** | [Next.js](https://nextjs.org/) (App Router), React, Tailwind CSS |
-| **Backend** | Node.js, Express.js |
-| **Database** | MongoDB, Prisma ORM |
-| **State Management**| Custom React `useState` Finite State Machine |
-| **Deployment** | Vercel |
-
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Node.js 18+
-- MongoDB (or MongoDB Atlas)
-- GitHub OAuth Application (for Client ID & Secret)
-
-### Local Development Setup
-
-1. **Clone & Install Dependencies**
-```bash
-# Install frontend dependencies
-cd gitanalyser
-npm install
-
-# Install backend dependencies
-cd ../backend
-npm install
-```
-
-2. **Environment Variables**
-Create a `.env` file in the `backend/` directory:
-```env
-DATABASE_URL="your-mongodb-connection-string"
-PORT=3001
-GITHUB_CLIENT_ID="your-github-oauth-client-id"
-GITHUB_CLIENT_SECRET="your-github-oauth-client-secret"
-GITHUB_REDIRECT_URI="http://localhost:3001/api/auth/callback"
-FRONTEND_URL="http://localhost:3000"
-GITHUB_TOKEN="your-github-personal-access-token"
-JWT_SECRET="your-secure-jwt-secret"
-```
-
-3. **Initialize the Server**
-Run both development servers concurrently:
-```bash
-# Terminal 1 - Backend
-cd backend && npm run dev
-
-# Terminal 2 - Frontend
-cd gitanalyser && npm run dev
-```
-Navigate to `http://localhost:3000` to initiate the handshake.
+- 🚀 **Automated CI/CD**: Integrated GitHub Actions pipeline for automated linting, type-checking, and build validation.
 
 ---
 
@@ -81,63 +42,79 @@ Navigate to `http://localhost:3000` to initiate the handshake.
 
 ```text
 sesd-project-sem4/
+├── .github/workflows/        # CI/CD Automation
+│   └── ci.yml                # Build & Lint Pipeline
 ├── backend/                  # Express.js API server
-│   ├── api/                  # Vercel serverless entry points
-│   │   └── index.ts
-│   ├── lib/                  # Database connection utilities
-│   │   └── prisma.ts
-│   ├── prisma/               # Database schema & migrations
+│   ├── prisma/               # Database schema & SearchHistory models
 │   │   └── schema.prisma
 │   ├── src/
-│   │   ├── index.ts          # Main server entry & routing
-│   │   └── services/         # OOP Business logic & External APIs
+│   │   ├── index.ts          # Main server & /api/targets routes
+│   │   └── services/         # Business logic layer
 │   │       ├── AuthService.ts
 │   │       └── GitHubService.ts
-│   └── vercel.json           # Backend deployment config
-│
+│   └── tsconfig.json         # Backend TS configuration
 ├── gitanalyser/              # Next.js SPA Frontend
 │   ├── src/
-│   │   ├── app/              # Next.js App Router
-│   │   │   ├── error/        # Custom error boundary
-│   │   │   ├── globals.css   # Global brutalist styles
-│   │   │   ├── layout.tsx    # App layout wrapper
-│   │   │   └── page.tsx      # Main application host container
-│   │   ├── components/       # React components
-│   │   │   ├── FlashCard.tsx # Core FSM router component
-│   │   │   └── screens/      # Stylized UI states
-│   │   │       ├── AuthScreen.tsx
-│   │   │       ├── LoadingScreen.tsx
-│   │   │       ├── MultiResultScreen.tsx
-│   │   │       └── ResultScreen.tsx
-│   │   └── types/            # TypeScript interfaces
-│   │       └── index.ts
-│   └── next.config.ts        # Next.js configuration
-│
-└── Docs/                     # System Architecture Diagrams
-    ├── classDiagram.md       # Component state mapping diagram
-    ├── ErDiagram.md          # Database schema visualization
-    ├── sequenceDiagram.md    # Step-by-step FSM rendering trace
-    └── useCaseDiagram.md     # Thematic flowchart of user interaction
+│   │   ├── app/              # App Router & Global Styles
+│   │   ├── components/       # UI Components
+│   │   │   ├── FlashCard.tsx # FSM Router
+│   │   │   └── screens/      # Thematic UI States
+│   │       ├── AuthScreen.tsx
+│   │       ├── LoadingScreen.tsx
+│   │       ├── MultiResultScreen.tsx (Classified Contacts)
+│   │       └── ResultScreen.tsx
+│   │   └── types/            # Unified Type System (AppData/ProfileData)
+│   └── next.config.ts
+└── Docs/                     # Technical Documentation & Diagrams
 ```
 
 ---
 
-## 📡 API Endpoints
+## 🛠️ Technology Stack
 
-| Method | Endpoint                | Description |
-| ------ | ----------------------- | ----------- |
-| `GET`  | `/api/auth/github`      | Initiates GitHub OAuth flow |
-| `GET`  | `/api/auth/callback`    | Handles OAuth callback & JWT assignment |
-| `GET`  | `/api/me`               | Verifies current JWT session |
-| `GET`  | `/api/github/:username` | Aggregates REST & GraphQL profile data |
+| Layer | Technology |
+|-------------------|------------|
+| **Frontend** | Next.js 15+, React, Tailwind CSS |
+| **Backend** | Node.js (v22), Express.js |
+| **Database** | MongoDB Atlas, Prisma ORM |
+| **Authentication** | GitHub OAuth 2.0, JWT (Cookie-based) |
+| **Validation** | GitHub Actions (Automated CI) |
 
 ---
 
-## 🎯 Next Steps & Roadmap
+## 🚀 Getting Started
 
-1. **AI Processing Integration**: Connect the backend to an AI service (HuggingFace/OpenAI) to feed the aggregated GitHub `ProfileData` into an LLM, generating a natural language "Threat Assessment" of the developer's skills.
-2. **Multi-Target Analysis**: Fully implement the `MULTI_RESULT` screen to compare multiple GitHub profiles side-by-side using the same extraction aesthetic.
-3. **Database Caching**: Fully utilize the MongoDB Prisma integration to cache historical GitHub lookups, significantly reducing external API rate limits on repeated target searches.
+### Prerequisites
+- Node.js 22.x
+- MongoDB Instance
+- GitHub OAuth App Credentials
+
+### Setup
+1. **Install Dependencies**:
+   ```bash
+   cd backend && npm install
+   cd ../gitanalyser && npm install
+   ```
+2. **Database Initialization**:
+   ```bash
+   cd backend
+   npx prisma generate
+   ```
+3. **Run Environment**:
+   ```bash
+   # Terminal 1
+   cd backend && npm run dev
+   # Terminal 2
+   cd gitanalyser && npm run dev
+   ```
+
+---
+
+## 🎯 Project Roadmap
+
+1. **AI Threat Assessment**: Integrate HuggingFace/OpenAI to generate natural language intelligence reports from extraction data.
+2. **Side-by-Side Comparison**: Enhance the `MULTI_RESULT` screen to allow comparative analysis of two operatives.
+3. **Encrypted Export**: Allow "Cold Storage" downloads of profile analysis as PDF/JSON files.
 
 ---
 *End of Document. Authorization Required for edits.*
