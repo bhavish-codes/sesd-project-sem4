@@ -26,6 +26,8 @@ jobs:
 
       - name: Install Dependencies
         run: npm install --no-audit
+        env:
+          DATABASE_URL: "mongodb://localhost:27017/test"
 
       - name: Generate Prisma Client
         run: npx prisma generate

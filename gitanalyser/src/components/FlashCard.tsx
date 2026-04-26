@@ -68,7 +68,7 @@ export function FlashCard({
   }
   return (
     <div className="w-full h-full relative z-10 flex">
-      {screen === "AUTH" && <AuthScreen setScreen={setScreen} />}
+      {screen === "AUTH" && <AuthScreen />}
       {screen === "LOADING" && (
         <LoadingScreen setScreen={setScreen} setData={setData} data={data} />
       )}
