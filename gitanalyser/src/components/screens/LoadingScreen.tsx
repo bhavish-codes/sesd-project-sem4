@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { ProfileData, Screen } from "@/types";
+import { AppData, ProfileData, Screen } from "@/types";
 
 interface Props {
   setScreen: (screen: Screen) => void;
-  setData: (data: ProfileData) => void;
-  data: Partial<ProfileData> & { login?: string };
+  setData: (data: AppData) => void;
+  data: AppData;
 }
 
 export function LoadingScreen({ setScreen, setData, data }: Props) {
@@ -57,7 +57,7 @@ export function LoadingScreen({ setScreen, setData, data }: Props) {
       }
     };
 
-    const username = data?.login || data?.username || "torvalds";
+    const username = data?.login || "torvalds";
     fetchGitHubData(username);
   }, [setData, setScreen, data]);
 

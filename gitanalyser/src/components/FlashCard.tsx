@@ -1,4 +1,4 @@
-import { AppData, Screen } from "@/types";
+import { AppData, ProfileData, Screen } from "@/types";
 import { AuthScreen } from "./screens/AuthScreen";
 import { LoadingScreen } from "./screens/LoadingScreen";
 import { ResultScreen } from "./screens/ResultScreen";
@@ -73,7 +73,7 @@ export function FlashCard({
         <LoadingScreen setScreen={setScreen} setData={setData} data={data} />
       )}
       {screen === "RESULT" && (
-        <ResultScreen data={data} setScreen={setScreen} />
+        <ResultScreen data={data as ProfileData} setScreen={setScreen} />
       )}
       {screen === "MULTI_RESULT" && <MultiResultScreen setScreen={setScreen} setData={setData} />}
     </div>
