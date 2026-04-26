@@ -4,7 +4,7 @@ interface Props {
   setScreen: (screen: Screen) => void;
 }
 
-export function AuthScreen({ setScreen }: Props) {
+export function AuthScreen() {
   return (
     <div className="w-full h-full flex flex-col items-center justify-center relative p-8">
       {/* Top Right Stamp */}

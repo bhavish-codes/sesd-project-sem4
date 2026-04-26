@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Screen } from "@/types";
+import { AppData, Screen } from "@/types";
 import { FlashCard } from "@/components/FlashCard";
 
 export default function Home() {
   const [screen, setScreen] = useState<Screen>("AUTH");
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<AppData>(null);
 
   const getSidebarText = () => {
     switch (screen) {

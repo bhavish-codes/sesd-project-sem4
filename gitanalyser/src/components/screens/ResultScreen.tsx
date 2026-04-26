@@ -66,7 +66,6 @@ export function ResultScreen({ data, setScreen }: Props) {
             {/* Mock Image Placeholder */}
             <div className="aspect-square bg-gray-300 relative overflow-hidden grayscale">
               <picture>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={
                     data?.avatarUrl ||
@@ -160,7 +159,7 @@ export function ResultScreen({ data, setScreen }: Props) {
                     { lang: "MAKEFILE", pct: 10 },
                     { lang: "SHELL", pct: 5 },
                   ]
-              ).map((item: any) => (
+              ).map((item: { lang: string; pct: number }) => (
                 <div key={item.lang} className="flex items-center gap-4">
                   <div className="w-24 font-mono text-xs font-bold tracking-widest truncate">
                     {item.lang}
@@ -199,9 +198,9 @@ export function ResultScreen({ data, setScreen }: Props) {
             </div>
 
             <div className="border-[1px] border-[var(--color-brand-red)] p-4 flex items-end gap-[2px] flex-1 bg-[#eae6dc] min-h-[120px]">
-              {(data?.contributions?.weeks?.flatMap((w: any) => w.contributionDays) || [])
+              {(data?.contributions?.weeks?.flatMap((w) => w.contributionDays) || [])
                 .slice(-140)
-                .map((day: any, i: number) => {
+                .map((day, i: number) => {
                   const count = day.contributionCount || 0;
                   
                   // Color thresholds

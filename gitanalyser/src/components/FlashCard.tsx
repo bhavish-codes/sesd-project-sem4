@@ -1,4 +1,4 @@
-import { Screen } from "@/types";
+import { AppData, Screen } from "@/types";
 import { AuthScreen } from "./screens/AuthScreen";
 import { LoadingScreen } from "./screens/LoadingScreen";
 import { ResultScreen } from "./screens/ResultScreen";
@@ -7,8 +7,8 @@ import { useEffect, useState } from "react";
 interface FlashCardProps {
   screen: Screen;
   setScreen: (screen: Screen) => void;
-  setData: (data: any) => void;
-  data: any;
+  setData: (data: AppData) => void;
+  data: AppData;
 }
 
 export function FlashCard({

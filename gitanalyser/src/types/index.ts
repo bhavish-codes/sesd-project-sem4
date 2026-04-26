@@ -32,3 +32,5 @@ export interface ProfileData {
   languages: LanguageData;
   contributions: ContributionCalendar;
 }
+
+export type AppData = ProfileData | { login: string } | null;
