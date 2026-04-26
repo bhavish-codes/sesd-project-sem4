@@ -184,10 +184,31 @@ export class GitHubService {
       repos: [],
     };
 
-    // 🔐 OPTIONAL: store in DB
-    // if (userId) {
-    //   await this.fetchAndStoreProfile("", userId, result.profile, allRepos);
-    // }
+    // 🔹 5. PERSIST TO SEARCH HISTORY (New feature)
+    try {
+      const topLanguage = Object.entries(langPercent).sort((a, b) => b[1] - a[1])[0]?.[0] || "Unknown";
+      await prisma.searchHistory.upsert({
+        where: { username: userData.login },
+        update: {
+          name: userData.name,
+          avatarUrl: userData.avatar_url,
+          location: userData.location,
+          totalCommits: contributions?.totalContributions || 0,
+          topLanguage,
+          searchedAt: new Date(),
+        },
+        create: {
+          username: userData.login,
+          name: userData.name,
+          avatarUrl: userData.avatar_url,
+          location: userData.location,
+          totalCommits: contributions?.totalContributions || 0,
+          topLanguage,
+        },
+      });
+    } catch (err) {
+      console.error("[GitHubService] Failed to save search history:", err);
+    }
 
     return result;
   }

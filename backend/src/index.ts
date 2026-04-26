@@ -144,6 +144,18 @@ router.post("/reports/:userId", async (req, res) => {
   }
 });
 
+// ─── Search History (Targets) ───
+router.get("/targets", async (_req, res) => {
+  try {
+    const targets = await prisma.searchHistory.findMany({
+      orderBy: { searchedAt: "desc" },
+    });
+    res.json(targets);
+  } catch (err) {
+    res.status(500).json({ error: String(err) });
+  }
+});
+
 // ─── GitHub Data ───
 router.get("/github/:username", async (req, res) => {
   try {
